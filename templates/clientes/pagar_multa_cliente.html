@@ -1,0 +1,96 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Pagar Multa{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'clientes:mi_perfil' %}">Mi Perfil</a></li>
+<li class="breadcrumb-item"><a href="{% url 'clientes:mis_multas' %}">Mis Multas</a></li>
+<li class="breadcrumb-item active">Pagar Multa</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body p-4">
+
+                <h5 class="fw-bold mb-1">Pagar Multa</h5>
+                <p class="text-muted mb-4" style="font-size:0.875rem;">
+                    Alquiler {{ multa.alquiler.numero }}
+                </p>
+
+                <!-- Resumen multa -->
+                <div style="background:#fff0f0; border-radius:10px; padding:15px; margin-bottom:20px;">
+                    <div class="d-flex justify-content-between mb-1" style="font-size:0.875rem;">
+                        <span class="text-muted">Días de retraso</span>
+                        <strong class="text-danger">{{ multa.dias_retraso }} días</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1" style="font-size:0.875rem;">
+                        <span class="text-muted">Valor por día</span>
+                        <strong>${{ multa.valor_por_dia|floatformat:0 }}</strong>
+                    </div>
+                    <hr class="my-2">
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-bold">Total a Pagar</span>
+                        <strong class="text-danger" style="font-size:1.1rem;">
+                            ${{ multa.monto_total|floatformat:0 }}
+                        </strong>
+                    </div>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <!-- Método de pago -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Método de Pago <span class="text-danger">*</span>
+                        </label>
+                        <select name="metodo_pago" class="form-select" required>
+                            <option value="efectivo">Efectivo</option>
+                            <option value="transferencia">Transferencia</option>
+                            <option value="tarjeta">Tarjeta</option>
+                        </select>
+                    </div>
+
+                    <!-- Referencia -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Número de Referencia</label>
+                        <input type="text" name="referencia" class="form-control"
+                               placeholder="Número de transacción o referencia">
+                    </div>
+
+                    <!-- Comprobante -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            Comprobante de Pago <span class="text-danger">*</span>
+                        </label>
+                        <input type="file" name="comprobante" class="form-control"
+                               accept="image/*,.pdf" required>
+                        <small class="text-muted">
+                            Sube foto o PDF del comprobante. El admin verificará tu pago.
+                        </small>
+                    </div>
+
+                    <div class="alert alert-info" style="font-size:0.8rem;">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Una vez subido el comprobante, el administrador verificará y
+                        confirmará tu pago. Tu multa quedará marcada como pagada.
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'clientes:mis_multas' %}" class="btn btn-outline-secondary w-100">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-upload me-1"></i>Subir Comprobante
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

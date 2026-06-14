@@ -33,31 +33,39 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for multa in multas %}
-                    <tr style="font-size:0.875rem;">
-                        <td class="ps-4"><strong>{{ multa.alquiler.numero }}</strong></td>
-                        <td>{{ multa.fecha_vencimiento }}</td>
-                        <td><span class="badge bg-danger">{{ multa.dias_retraso }} días</span></td>
-                        <td class="text-danger fw-bold">${{ multa.monto_total|floatformat:0 }}</td>
-                        <td>
-                            {% if multa.estado == 'pendiente' %}
-                                <span class="badge bg-danger">Pendiente</span>
-                            {% elif multa.estado == 'pagada' %}
-                                <span class="badge bg-success">Pagada</span>
-                            {% else %}
-                                <span class="badge bg-secondary">Condonada</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="text-center text-muted py-5">
-                            <i class="bi bi-check-circle text-success" style="font-size:2rem;"></i>
-                            <p class="mt-2">No tienes multas registradas</p>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
+    {% for multa in multas %}
+    <tr style="font-size:0.875rem;">
+        <td class="ps-4"><strong>{{ multa.alquiler.numero }}</strong></td>
+        <td>{{ multa.fecha_vencimiento }}</td>
+        <td><span class="badge bg-danger">{{ multa.dias_retraso }} días</span></td>
+        <td class="text-danger fw-bold">${{ multa.monto_total|floatformat:0 }}</td>
+        <td>
+            {% if multa.estado == 'pendiente' %}
+                <span class="badge bg-danger">Pendiente</span>
+            {% elif multa.estado == 'pagada' %}
+                <span class="badge bg-success">Pagada</span>
+            {% else %}
+                <span class="badge bg-secondary">Condonada</span>
+            {% endif %}
+        </td>
+        <td class="text-center">
+            {% if multa.estado == 'pendiente' %}
+            <a href="{% url 'clientes:pagar_multa_cliente' multa.pk %}"
+            class="btn btn-sm btn-success">
+                <i class="bi bi-cash me-1"></i>Pagar
+            </a>
+            {% endif %}
+        </td>
+    </tr>
+
+    {% empty %}
+    <tr>
+        <td colspan="6" class="text-center py-4 text-muted">
+            No tienes multas registradas.
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
             </table>
         </div>
     </div>

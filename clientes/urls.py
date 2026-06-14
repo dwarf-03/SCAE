@@ -20,4 +20,10 @@ urlpatterns = [
     path('solicitar-alquiler/', views.solicitar_alquiler, name='solicitar_alquiler'),
     path('editar-perfil/', views.editar_perfil, name='editar_perfil'),
     path('cambiar-password/', views.cambiar_password, name='cambiar_password'),
+
+    # Devolución desde cliente
+    path('devolver/<int:pk>/', views.solicitar_devolucion, name='solicitar_devolucion'),
+
+    # Pago de multa desde cliente
+    path('pagar-multa/<int:pk>/', views.pagar_multa_cliente, name='pagar_multa_cliente'),
 ]

@@ -358,3 +358,162 @@ def cambiar_password(request):
             return redirect('login')
 
     return render(request, 'clientes/cambiar_password.html')
+
+@login_required
+def solicitar_devolucion(request, pk):
+    from alquileres.models import Alquiler
+    from devoluciones.models import Devolucion, DetalleDevolucion
+    from inventario.models import Herramienta
+    from django.db import models
+
+    try:
+        cliente = Cliente.objects.get(usuario=request.user)
+    except Cliente.DoesNotExist:
+        return redirect('login')
+
+    # Solo puede devolver sus propios alquileres activos
+    alquiler = get_object_or_404(Alquiler, pk=pk, cliente=cliente, estado='activo')
+
+    if request.method == 'POST':
+        try:
+            # Fecha de hoy como fecha de devolución
+            hoy = timezone.now().date()
+
+            # Calcula si hay retraso
+            dias_retraso = 0
+            tiene_multa = False
+            if hoy > alquiler.fecha_fin:
+                dias_retraso = (hoy - alquiler.fecha_fin).days
+                tiene_multa = True
+
+            # Crea la devolución
+            devolucion = Devolucion.objects.create(
+                alquiler=alquiler,
+                recibido_por=request.user,
+                fecha_devolucion=hoy,
+                estado='completa',
+                tiene_multa=tiene_multa,
+                observaciones=request.POST.get('observaciones'),
+            )
+
+            # Procesa cada herramienta
+            for detalle in alquiler.detalles.all():
+                DetalleDevolucion.objects.create(
+                    devolucion=devolucion,
+                    detalle_alquiler=detalle,
+                    cantidad_devuelta=detalle.cantidad,
+                    condicion='bueno',
+                )
+
+                # Actualiza inventario
+                Herramienta.objects.filter(pk=detalle.herramienta.pk).update(
+                    cantidad_disponible=models.F('cantidad_disponible') + detalle.cantidad,
+                    cantidad_alquilada=models.Case(
+                        models.When(
+                            cantidad_alquilada__gte=detalle.cantidad,
+                            then=models.F('cantidad_alquilada') - detalle.cantidad
+                        ),
+                        default=0,
+                        output_field=models.PositiveIntegerField()
+                    )
+                )
+
+            # Actualiza estado del alquiler
+            alquiler.estado = 'devuelto'
+            alquiler.fecha_devolucion_real = hoy
+            alquiler.save()
+
+            # Genera multa si hay retraso
+            if tiene_multa:
+                from multas.models import Multa, ConfiguracionMulta
+                from django.db.models import Sum
+                config = ConfiguracionMulta.objects.filter(activo=True).first()
+                valor_dia = config.valor_por_dia if config else 50000
+                dias_con_gracia = max(0, dias_retraso - (config.dias_gracia if config else 0))
+
+                if dias_con_gracia > 0:
+                    Multa.objects.create(
+                        alquiler=alquiler,
+                        cliente=cliente,
+                        fecha_vencimiento=alquiler.fecha_fin,
+                        fecha_devolucion=hoy,
+                        dias_retraso=dias_con_gracia,
+                        valor_por_dia=valor_dia,
+                        monto_total=valor_dia * dias_con_gracia,
+                        registrado_por=request.user,
+                    )
+                    # Actualiza deuda del cliente
+                    multas_pendientes = Multa.objects.filter(
+                        cliente=cliente, estado='pendiente'
+                    ).aggregate(total=Sum('monto_total'))['total'] or 0
+                    cliente.deuda_total = multas_pendientes
+                    cliente.tiene_deuda = True
+                    cliente.save()
+
+                    messages.warning(request, f'Se generó una multa por {dias_con_gracia} días de retraso.')
+
+            messages.success(request, 'Devolución registrada exitosamente.')
+            return redirect('clientes:mis_devoluciones')
+
+        except Exception as e:
+            messages.error(request, f'Error al registrar devolución: {str(e)}')
+
+    return render(request, 'clientes/solicitar_devolucion.html', {
+        'alquiler': alquiler,
+        'detalles': alquiler.detalles.select_related('herramienta').all(),
+        'hoy': timezone.now().date(),
+    })
+
+
+@login_required
+def pagar_multa_cliente(request, pk):
+    from multas.models import Multa, PagoMulta
+
+    try:
+        cliente = Cliente.objects.get(usuario=request.user)
+    except Cliente.DoesNotExist:
+        return redirect('login')
+
+    # Solo puede pagar sus propias multas pendientes
+    multa = get_object_or_404(Multa, pk=pk, cliente=cliente, estado='pendiente')
+
+    if request.method == 'POST':
+        try:
+            comprobante = request.FILES.get('comprobante')
+            metodo_pago = request.POST.get('metodo_pago')
+            referencia = request.POST.get('referencia')
+
+            if not comprobante:
+                messages.error(request, 'Debes subir el comprobante de pago.')
+                return redirect('clientes:pagar_multa_cliente', pk=pk)
+
+            # Registra el pago con comprobante
+            PagoMulta.objects.create(
+                multa=multa,
+                monto=multa.monto_total,
+                metodo_pago=metodo_pago,
+                referencia=referencia,
+                registrado_por=request.user,
+                comprobante=comprobante,
+            )
+
+            # Marca como pagada
+            multa.estado = 'pagada'
+            multa.save()
+
+            # Actualiza deuda del cliente
+            from django.db.models import Sum
+            multas_pendientes = Multa.objects.filter(
+                cliente=cliente, estado='pendiente'
+            ).aggregate(total=Sum('monto_total'))['total'] or 0
+            cliente.deuda_total = multas_pendientes
+            cliente.tiene_deuda = multas_pendientes > 0
+            cliente.save()
+
+            messages.success(request, 'Pago registrado. El administrador verificará tu comprobante.')
+            return redirect('clientes:mis_multas')
+
+        except Exception as e:
+            messages.error(request, f'Error al registrar pago: {str(e)}')
+
+    return render(request, 'clientes/pagar_multa_cliente.html', {'multa': multa})
