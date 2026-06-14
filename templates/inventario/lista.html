@@ -1,0 +1,166 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Inventario{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+<li class="breadcrumb-item active">Inventario</li>
+{% endblock %}
+
+{% block content %}
+
+<!-- Título y botón crear -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="page-title">Inventario</div>
+        <div class="page-subtitle">{{ total }} herramientas registradas</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'inventario:categorias' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-tags me-1"></i>Categorías
+        </a>
+        <a href="{% url 'inventario:crear' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>Nueva Herramienta
+        </a>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <!-- Búsqueda por nombre -->
+            <div class="col-md-4">
+                <input type="text" name="buscar" class="form-control"
+                       placeholder="Buscar herramienta..." value="{{ buscar }}">
+            </div>
+            <!-- Filtro por categoría -->
+            <div class="col-md-3">
+                <select name="categoria" class="form-select">
+                    <option value="">Todas las categorías</option>
+                    {% for cat in categorias %}
+                    <option value="{{ cat.id }}" {% if categoria_id == cat.id|stringformat:"s" %}selected{% endif %}>
+                        {{ cat.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <!-- Filtro por estado -->
+            <div class="col-md-3">
+                <select name="estado" class="form-select">
+                    <option value="">Todos los estados</option>
+                    <option value="disponible" {% if estado == 'disponible' %}selected{% endif %}>Disponible</option>
+                    <option value="rentada" {% if estado == 'rentada' %}selected{% endif %}>Rentada</option>
+                    <option value="mantenimiento" {% if estado == 'mantenimiento' %}selected{% endif %}>Mantenimiento</option>
+                    <option value="fuera_servicio" {% if estado == 'fuera_servicio' %}selected{% endif %}>Fuera de Servicio</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i>
+                </button>
+                <a href="{% url 'inventario:lista' %}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabla de herramientas -->
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background: #f8f9fa;">
+                    <tr style="font-size: 0.8rem; color: #6c757d;">
+                        <th class="ps-4">Herramienta</th>
+                        <th>Categoría</th>
+                        <th>Precio/Día</th>
+                        <th>Disponible</th>
+                        <th>Alquilada</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for h in herramientas %}
+                    <tr style="font-size: 0.875rem;">
+                        <!-- Foto y nombre -->
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center gap-3">
+                                {% if h.fotografia %}
+                                    <img src="{{ h.fotografia.url }}" width="40" height="40"
+                                         style="border-radius: 8px; object-fit: cover;">
+                                {% else %}
+                                    <div style="width:40px; height:40px; background:#f0f2f5;
+                                                border-radius:8px; display:flex; align-items:center;
+                                                justify-content:center;">
+                                        <i class="bi bi-tools text-muted"></i>
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <div class="fw-semibold">{{ h.nombre }}</div>
+                                    <div style="font-size:0.75rem; color:#6c757d;">{{ h.codigo }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ h.categoria.nombre }}</td>
+                        <td>${{ h.precio_diario|floatformat:0 }}</td>
+                        <td>
+                            <span class="badge bg-success">{{ h.cantidad_disponible }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-warning text-dark">{{ h.cantidad_alquilada }}</span>
+                        </td>
+                        <td>{{ h.cantidad_total }}</td>
+                        <td>
+                            {% if h.estado == 'disponible' %}
+                                <span class="badge bg-success">Disponible</span>
+                            {% elif h.estado == 'rentada' %}
+                                <span class="badge bg-warning text-dark">Rentada</span>
+                            {% elif h.estado == 'mantenimiento' %}
+                                <span class="badge bg-info">Mantenimiento</span>
+                            {% elif h.estado == 'fuera_servicio' %}
+                                <span class="badge bg-danger">Fuera de Servicio</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ h.estado }}</span>
+                            {% endif %}
+                        </td>
+                        <!-- Botones de acción -->
+                        <td class="text-center">
+                            <div class="d-flex justify-content-center gap-1">
+                                <a href="{% url 'inventario:detalle' h.pk %}"
+                                   class="btn btn-sm btn-outline-info" title="Ver detalle">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'inventario:editar' h.pk %}"
+                                   class="btn btn-sm btn-outline-primary" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'inventario:eliminar' h.pk %}"
+                                   class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-5">
+                            <i class="bi bi-tools" style="font-size: 2rem;"></i>
+                            <p class="mt-2">No hay herramientas registradas</p>
+                            <a href="{% url 'inventario:crear' %}" class="btn btn-primary btn-sm">
+                                Agregar primera herramienta
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

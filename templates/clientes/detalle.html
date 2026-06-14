@@ -1,0 +1,214 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Detalle Cliente{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+<li class="breadcrumb-item"><a href="{% url 'clientes:lista' %}">Clientes</a></li>
+<li class="breadcrumb-item active">{{ cliente.nombre_completo }}</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="page-title">{{ cliente.nombre_completo }}</div>
+        <div class="page-subtitle">{{ cliente.get_tipo_documento_display }} - {{ cliente.numero_documento }}</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'clientes:editar' cliente.pk %}" class="btn btn-primary">
+            <i class="bi bi-pencil me-1"></i>Editar
+        </a>
+        <a href="{% url 'clientes:lista' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Volver
+        </a>
+    </div>
+</div>
+
+<div class="row g-3">
+
+    <!-- Info principal -->
+    <div class="col-xl-4">
+        <div class="card">
+            <div class="card-body p-4 text-center">
+
+                <!-- Avatar -->
+                <div style="width:80px; height:80px; background:linear-gradient(135deg,#4361ee,#3a0ca3);
+                            border-radius:50%; display:flex; align-items:center; justify-content:center;
+                            color:white; font-weight:700; font-size:1.8rem; margin:0 auto 15px;">
+                    {{ cliente.usuario.first_name|first|upper }}{{ cliente.usuario.last_name|first|upper }}
+                </div>
+
+                <h5 class="fw-bold mb-1">{{ cliente.nombre_completo }}</h5>
+                <p style="font-size:0.85rem; color:#6c757d;">{{ cliente.email }}</p>
+
+                {% if cliente.verificado %}
+                    <span class="badge bg-success mb-3">
+                        <i class="bi bi-check-circle me-1"></i>Verificado
+                    </span>
+                {% else %}
+                    <span class="badge bg-warning text-dark mb-3">
+                        <i class="bi bi-clock me-1"></i>Pendiente verificación
+                    </span>
+                {% endif %}
+
+                <hr>
+
+                <div class="text-start">
+                    <div class="d-flex justify-content-between mb-2" style="font-size:0.875rem;">
+                        <span class="text-muted">Documento</span>
+                        <strong>{{ cliente.numero_documento }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2" style="font-size:0.875rem;">
+                        <span class="text-muted">Teléfono</span>
+                        <strong>{{ cliente.telefono }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2" style="font-size:0.875rem;">
+                        <span class="text-muted">Ciudad</span>
+                        <strong>{{ cliente.ciudad }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2" style="font-size:0.875rem;">
+                        <span class="text-muted">Dirección</span>
+                        <strong>{{ cliente.direccion }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between" style="font-size:0.875rem;">
+                        <span class="text-muted">Registrado</span>
+                        <strong>{{ cliente.fecha_registro|date:"d/m/Y" }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="card mt-3">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3">Estadísticas</h6>
+                <div class="row g-2 text-center">
+                    <div class="col-6">
+                        <div style="background:#f0f2f5; border-radius:8px; padding:12px;">
+                            <div class="fw-bold text-primary" style="font-size:1.3rem;">
+                                {{ cliente.total_alquileres }}
+                            </div>
+                            <div style="font-size:0.75rem; color:#6c757d;">Total Alquileres</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div style="background:#f0f2f5; border-radius:8px; padding:12px;">
+                            <div class="fw-bold text-success" style="font-size:1.3rem;">
+                                {{ cliente.alquileres_activos }}
+                            </div>
+                            <div style="font-size:0.75rem; color:#6c757d;">Activos</div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="{% if cliente.tiene_deuda %}bg-danger-subtle{% else %}bg-success-subtle{% endif %}" style="border-radius:8px; padding:12px;">
+                            <div class="fw-bold {% if cliente.tiene_deuda %}text-danger{% else %}text-success{% endif %}" style="font-size:1.3rem;">
+                                ${{ cliente.deuda_total|floatformat:0 }}
+                            </div>
+                            <div style="font-size:0.75rem; color:#6c757d;">Deuda Total</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historial -->
+    <div class="col-xl-8">
+
+        <!-- Alquileres recientes -->
+        <div class="card mb-3">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h6 class="fw-bold mb-0">Historial de Alquileres</h6>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead style="background:#f8f9fa;">
+                        <tr style="font-size:0.8rem; color:#6c757d;">
+                            <th class="ps-4">N° Alquiler</th>
+                            <th>Fecha Inicio</th>
+                            <th>Fecha Fin</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for alquiler in alquileres %}
+                        <tr style="font-size:0.875rem;">
+                            <td class="ps-4"><strong>{{ alquiler.numero }}</strong></td>
+                            <td>{{ alquiler.fecha_inicio }}</td>
+                            <td>{{ alquiler.fecha_fin }}</td>
+                            <td>${{ alquiler.total|floatformat:0 }}</td>
+                            <td>
+                                {% if alquiler.estado == 'activo' %}
+                                    <span class="badge bg-success">Activo</span>
+                                {% elif alquiler.estado == 'vencido' %}
+                                    <span class="badge bg-danger">Vencido</span>
+                                {% elif alquiler.estado == 'devuelto' %}
+                                    <span class="badge bg-secondary">Devuelto</span>
+                                {% else %}
+                                    <span class="badge bg-warning">{{ alquiler.estado }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-3">
+                                Sin alquileres registrados
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Multas -->
+        <div class="card">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h6 class="fw-bold mb-0 text-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Historial de Multas
+                </h6>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead style="background:#f8f9fa;">
+                        <tr style="font-size:0.8rem; color:#6c757d;">
+                            <th class="ps-4">Alquiler</th>
+                            <th>Días Retraso</th>
+                            <th>Monto</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for multa in multas %}
+                        <tr style="font-size:0.875rem;">
+                            <td class="ps-4"><strong>{{ multa.alquiler.numero }}</strong></td>
+                            <td>{{ multa.dias_retraso }} días</td>
+                            <td class="text-danger">${{ multa.monto_total|floatformat:0 }}</td>
+                            <td>
+                                {% if multa.estado == 'pendiente' %}
+                                    <span class="badge bg-danger">Pendiente</span>
+                                {% elif multa.estado == 'pagada' %}
+                                    <span class="badge bg-success">Pagada</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Condonada</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-3">
+                                Sin multas registradas
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,144 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Detalle Multa{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+<li class="breadcrumb-item"><a href="{% url 'multas:lista' %}">Multas</a></li>
+<li class="breadcrumb-item active">Detalle</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="page-title">Detalle de Multa</div>
+        <div class="page-subtitle">{{ multa.alquiler.numero }} - {{ multa.cliente.nombre_completo }}</div>
+    </div>
+    <div class="d-flex gap-2">
+        {% if multa.estado == 'pendiente' %}
+        <a href="{% url 'multas:pagar' multa.pk %}" class="btn btn-success">
+            <i class="bi bi-cash me-1"></i>Registrar Pago
+        </a>
+        <a href="{% url 'multas:condonar' multa.pk %}" class="btn btn-outline-warning">
+            <i class="bi bi-x-circle me-1"></i>Condonar
+        </a>
+        {% endif %}
+        <a href="{% url 'multas:lista' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Volver
+        </a>
+    </div>
+</div>
+
+<div class="row g-3">
+
+    <!-- Info multa -->
+    <div class="col-xl-4">
+        <div class="card mb-3">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3">Información de la Multa</h6>
+
+                <div class="text-center mb-3">
+                    <div style="font-size:2rem; font-weight:700; color:#e63946;">
+                        ${{ multa.monto_total|floatformat:0 }}
+                    </div>
+                    <div style="font-size:0.8rem; color:#6c757d;">Monto Total</div>
+                </div>
+
+                <div class="d-flex justify-content-between mb-2" style="font-size:0.875rem;">
+                    <span class="text-muted">Estado</span>
+                    {% if multa.estado == 'pendiente' %}
+                        <span class="badge bg-danger">Pendiente</span>
+                    {% elif multa.estado == 'pagada' %}
+                        <span class="badge bg-success">Pagada</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Condonada</span>
+                    {% endif %}
+                </div>
+                <div class="d-flex justify-content-between mb-2" style="font-size:0.875rem;">
+                    <span class="text-muted">Alquiler</span>
+                    <strong>{{ multa.alquiler.numero }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2" style="font-size:0.875rem;">
+                    <span class="text-muted">Fecha Vencimiento</span>
+                    <strong>{{ multa.fecha_vencimiento }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2" style="font-size:0.875rem;">
+                    <span class="text-muted">Fecha Devolución</span>
+                    <strong>{{ multa.fecha_devolucion }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2" style="font-size:0.875rem;">
+                    <span class="text-muted">Días Retraso</span>
+                    <strong class="text-danger">{{ multa.dias_retraso }}</strong>
+                </div>
+                <div class="d-flex justify-content-between" style="font-size:0.875rem;">
+                    <span class="text-muted">Valor por Día</span>
+                    <strong>${{ multa.valor_por_dia|floatformat:0 }}</strong>
+                </div>
+
+                {% if multa.motivo_condonacion %}
+                <hr>
+                <div style="font-size:0.875rem;">
+                    <div class="text-muted mb-1">Motivo Condonación</div>
+                    <div>{{ multa.motivo_condonacion }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Info cliente -->
+        <div class="card">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3">Cliente</h6>
+                <div class="fw-semibold">{{ multa.cliente.nombre_completo }}</div>
+                <div style="font-size:0.8rem; color:#6c757d;">{{ multa.cliente.telefono }}</div>
+                <a href="{% url 'clientes:detalle' multa.cliente.pk %}"
+                   class="btn btn-outline-primary btn-sm w-100 mt-3">
+                    Ver perfil
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagos -->
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h6 class="fw-bold mb-0">Historial de Pagos</h6>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead style="background:#f8f9fa; font-size:0.8rem; color:#6c757d;">
+                        <tr>
+                            <th class="ps-4">Fecha</th>
+                            <th>Monto</th>
+                            <th>Método</th>
+                            <th>Referencia</th>
+                            <th>Registrado por</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pago in pagos %}
+                        <tr style="font-size:0.875rem;">
+                            <td class="ps-4">{{ pago.fecha_pago|date:"d/m/Y H:i" }}</td>
+                            <td class="text-success fw-bold">${{ pago.monto|floatformat:0 }}</td>
+                            <td>{{ pago.get_metodo_pago_display }}</td>
+                            <td>{{ pago.referencia|default:"-" }}</td>
+                            <td>{{ pago.registrado_por.get_full_name }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                No hay pagos registrados
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

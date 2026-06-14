@@ -1,0 +1,136 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Alquileres{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+<li class="breadcrumb-item active">Alquileres</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="page-title">Alquileres</div>
+        <div class="page-subtitle">{{ total }} alquileres registrados</div>
+    </div>
+    <a href="{% url 'alquileres:crear' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>Nuevo Alquiler
+    </a>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-6">
+                <input type="text" name="buscar" class="form-control"
+                       placeholder="Buscar por número o cliente..." value="{{ buscar }}">
+            </div>
+            <div class="col-md-3">
+                <select name="estado" class="form-select">
+                    <option value="">Todos los estados</option>
+                    <option value="activo" {% if estado == 'activo' %}selected{% endif %}>Activo</option>
+                    <option value="vencido" {% if estado == 'vencido' %}selected{% endif %}>Vencido</option>
+                    <option value="devuelto" {% if estado == 'devuelto' %}selected{% endif %}>Devuelto</option>
+                    <option value="cancelado" {% if estado == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i>
+                </button>
+                <a href="{% url 'alquileres:lista' %}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabla -->
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background:#f8f9fa;">
+                    <tr style="font-size:0.8rem; color:#6c757d;">
+                        <th class="ps-4">N° Alquiler</th>
+                        <th>Cliente</th>
+                        <th>Fecha Inicio</th>
+                        <th>Fecha Fin</th>
+                        <th>Total</th>
+                        <th>Canal</th>
+                        <th>Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for alquiler in alquileres %}
+                    <tr style="font-size:0.875rem;">
+                        <td class="ps-4"><strong>{{ alquiler.numero }}</strong></td>
+                        <td>{{ alquiler.cliente.nombre_completo }}</td>
+                        <td>{{ alquiler.fecha_inicio }}</td>
+                        <td>
+                            {{ alquiler.fecha_fin }}
+                            {% if alquiler.esta_vencido %}
+                                <span class="badge bg-danger ms-1">
+                                    {{ alquiler.dias_vencidos }}d
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>${{ alquiler.total|floatformat:0 }}</td>
+                        <td>
+                            {% if alquiler.canal == 'whatsapp' %}
+                                <i class="bi bi-whatsapp text-success"></i>
+                            {% elif alquiler.canal == 'web' %}
+                                <i class="bi bi-globe text-primary"></i>
+                            {% else %}
+                                <i class="bi bi-shop text-warning"></i>
+                            {% endif %}
+                            {{ alquiler.get_canal_display }}
+                        </td>
+                        <td>
+                            {% if alquiler.estado == 'activo' %}
+                                <span class="badge bg-success">Activo</span>
+                            {% elif alquiler.estado == 'vencido' %}
+                                <span class="badge bg-danger">Vencido</span>
+                            {% elif alquiler.estado == 'devuelto' %}
+                                <span class="badge bg-secondary">Devuelto</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Cancelado</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <div class="d-flex justify-content-center gap-1">
+                                <a href="{% url 'alquileres:detalle' alquiler.pk %}"
+                                   class="btn btn-sm btn-outline-info" title="Ver detalle">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if alquiler.estado == 'activo' %}
+                                <a href="{% url 'alquileres:cancelar' alquiler.pk %}"
+                                   class="btn btn-sm btn-outline-danger" title="Cancelar">
+                                    <i class="bi bi-x-circle"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-5">
+                            <i class="bi bi-file-earmark-text" style="font-size:2rem;"></i>
+                            <p class="mt-2">No hay alquileres registrados</p>
+                            <a href="{% url 'alquileres:crear' %}" class="btn btn-primary btn-sm">
+                                Crear primer alquiler
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Pagar Multa{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+<li class="breadcrumb-item"><a href="{% url 'multas:lista' %}">Multas</a></li>
+<li class="breadcrumb-item active">Pagar</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body p-4">
+
+                <h5 class="fw-bold mb-1">Registrar Pago de Multa</h5>
+                <p class="text-muted mb-4" style="font-size:0.875rem;">
+                    {{ multa.alquiler.numero }} - {{ multa.cliente.nombre_completo }}
+                </p>
+
+                <!-- Resumen multa -->
+                <div style="background:#fff0f0; border-radius:10px; padding:15px; margin-bottom:20px;">
+                    <div class="d-flex justify-content-between mb-1" style="font-size:0.875rem;">
+                        <span class="text-muted">Días de retraso</span>
+                        <strong class="text-danger">{{ multa.dias_retraso }} días</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1" style="font-size:0.875rem;">
+                        <span class="text-muted">Valor por día</span>
+                        <strong>${{ multa.valor_por_dia|floatformat:0 }}</strong>
+                    </div>
+                    <hr class="my-2">
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-bold">Total a Pagar</span>
+                        <strong class="text-danger" style="font-size:1.1rem;">
+                            ${{ multa.monto_total|floatformat:0 }}
+                        </strong>
+                    </div>
+                </div>
+
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Monto <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" name="monto" class="form-control"
+                                   value="{{ multa.monto_total }}" min="0" step="0.01" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Método de Pago <span class="text-danger">*</span></label>
+                        <select name="metodo_pago" class="form-select" required>
+                            <option value="efectivo">Efectivo</option>
+                            <option value="transferencia">Transferencia</option>
+                            <option value="tarjeta">Tarjeta</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Referencia</label>
+                        <input type="text" name="referencia" class="form-control"
+                               placeholder="Número de referencia o comprobante">
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'multas:lista' %}" class="btn btn-outline-secondary w-100">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-cash me-1"></i>Confirmar Pago
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

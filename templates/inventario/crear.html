@@ -1,0 +1,132 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Nueva Herramienta{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+<li class="breadcrumb-item"><a href="{% url 'inventario:lista' %}">Inventario</a></li>
+<li class="breadcrumb-item active">Nueva Herramienta</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="page-title">Nueva Herramienta</div>
+        <div class="page-subtitle">Registra una nueva herramienta en el inventario</div>
+    </div>
+    <a href="{% url 'inventario:lista' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Volver
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-body p-4">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="row g-3">
+
+                        <!-- Código -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Código <span class="text-danger">*</span></label>
+                            <input type="text" name="codigo" class="form-control"
+                                   placeholder="Ej: AND-001" required>
+                            <small class="text-muted">Código único de la herramienta</small>
+                        </div>
+
+                        <!-- Nombre -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+                            <input type="text" name="nombre" class="form-control"
+                                   placeholder="Ej: Andamio Tubular" required>
+                        </div>
+
+                        <!-- Categoría -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Categoría <span class="text-danger">*</span></label>
+                            <select name="categoria" class="form-select" required>
+                                <option value="">Seleccionar categoría</option>
+                                {% for cat in categorias %}
+                                <option value="{{ cat.id }}">{{ cat.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Precio diario -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Precio por Día <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" name="precio_diario" class="form-control"
+                                       placeholder="0" min="0" step="0.01" required>
+                            </div>
+                        </div>
+
+                        <!-- Cantidad total -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Cantidad Total <span class="text-danger">*</span></label>
+                            <input type="number" name="cantidad_total" class="form-control"
+                                   placeholder="0" min="1" required>
+                        </div>
+
+                        <!-- Fotografía -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Fotografía</label>
+                            <input type="file" name="fotografia" class="form-control"
+                                   accept="image/*">
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Descripción</label>
+                            <textarea name="descripcion" class="form-control" rows="3"
+                                      placeholder="Descripción detallada de la herramienta..."></textarea>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="col-12 d-flex gap-2 justify-content-end">
+                            <a href="{% url 'inventario:lista' %}" class="btn btn-outline-secondary">
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-1"></i>Guardar Herramienta
+                            </button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel informativo -->
+    <div class="col-xl-4">
+        <div class="card">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-info-circle me-2 text-primary"></i>Información
+                </h6>
+                <ul class="list-unstyled" style="font-size: 0.875rem; color: #6c757d;">
+                    <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>El código debe ser único</li>
+                    <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Se generará un QR automáticamente</li>
+                    <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>La cantidad disponible será igual a la total</li>
+                    <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>El estado inicial será Disponible</li>
+                </ul>
+
+                <!-- Si no hay categorías -->
+                {% if not categorias %}
+                <div class="alert alert-warning mt-3" style="font-size: 0.8rem;">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    No hay categorías registradas.
+                    <a href="{% url 'inventario:categorias' %}">Crear categoría</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

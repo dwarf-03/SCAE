@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SCAE{% endblock %} - Sistema de Alquiler</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ===== VARIABLES DE COLOR ===== */
+        :root {
+            --sidebar-bg: #1a1f2e;
+            --sidebar-hover: #2d3449;
+            --sidebar-active: #4361ee;
+            --sidebar-width: 260px;
+            --navbar-bg: #ffffff;
+            --primary: #4361ee;
+            --success: #2ec4b6;
+            --warning: #ff9f1c;
+            --danger: #e63946;
+            --text-muted: #6c757d;
+            --card-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        }
+
+        /* ===== BODY Y FUENTE BASE ===== */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+        }
+
+        /* ===== SIDEBAR OSCURO ===== */
+        #sidebar {
+            width: var(--sidebar-width);
+            min-height: 100vh;
+            background: var(--sidebar-bg);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+        }
+
+        /* Logo del sidebar */
+        .sidebar-brand {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-brand h4 {
+            color: #ffffff;
+            font-weight: 700;
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .sidebar-brand span {
+            color: var(--primary);
+        }
+
+        /* Sección del menú */
+        .sidebar-section {
+            padding: 15px 20px 5px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.4);
+            font-weight: 600;
+        }
+
+        /* Items del menú */
+        .sidebar-item {
+            padding: 0 10px;
+            margin: 2px 0;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .sidebar-link:hover {
+            background: var(--sidebar-hover);
+            color: #ffffff;
+        }
+
+        /* Link activo en el menú */
+        .sidebar-link.active {
+            background: var(--primary);
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .sidebar-link i {
+            width: 20px;
+            margin-right: 10px;
+            font-size: 1rem;
+        }
+
+        /* ===== CONTENIDO PRINCIPAL ===== */
+        #main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        /* ===== NAVBAR SUPERIOR CLARO ===== */
+        #topbar {
+            background: var(--navbar-bg);
+            padding: 12px 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        /* Botón para colapsar sidebar */
+        #sidebarToggle {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            color: #555;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        #sidebarToggle:hover {
+            background: #f0f2f5;
+        }
+
+        /* Avatar del usuario */
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        /* ===== ÁREA DE CONTENIDO ===== */
+        .content-area {
+            padding: 25px;
+        }
+
+        /* Título de página */
+        .page-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1a1f2e;
+            margin-bottom: 5px;
+        }
+
+        .page-subtitle {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-bottom: 25px;
+        }
+
+        /* ===== TARJETAS ===== */
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+        }
+
+        /* Tarjetas de estadísticas del dashboard */
+        .stat-card {
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card .stat-icon {
+            font-size: 2.5rem;
+            opacity: 0.3;
+            position: absolute;
+            right: 15px;
+            top: 15px;
+        }
+
+        .stat-card .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.85rem;
+            opacity: 0.85;
+        }
+
+        /* ===== SIDEBAR COLAPSADO EN MÓVIL ===== */
+        @media (max-width: 768px) {
+            #sidebar {
+                left: calc(var(--sidebar-width) * -1);
+            }
+            #sidebar.show {
+                left: 0;
+            }
+            #main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- ===== SIDEBAR ===== -->
+    <div id="sidebar">
+
+        <!-- Logo -->
+        <div class="sidebar-brand">
+            <h4><span>SC</span>AE</h4>
+            <small style="color: rgba(255,255,255,0.4); font-size: 0.7rem;">
+                Sistema de Alquiler de Equipos
+            </small>
+        </div>
+
+        <!-- Menú Principal -->
+        <div class="sidebar-section">Principal</div>
+
+        <div class="sidebar-item">
+            <a href="{% url 'dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+        </div>
+
+        <!-- Menú Gestión -->
+        <div class="sidebar-section">Gestión</div>
+
+        <div class="sidebar-item">
+            <a href="{% url 'inventario:lista' %}" class="sidebar-link">
+                <i class="bi bi-tools"></i> Inventario
+            </a>
+        </div>
+
+        <div class="sidebar-item">
+            <a href="{% url 'clientes:lista' %}" class="sidebar-link">
+                <i class="bi bi-people"></i> Clientes
+            </a>
+        </div>
+
+        <div class="sidebar-item">
+            <a href="{% url 'alquileres:lista' %}" class="sidebar-link">
+                <i class="bi bi-file-earmark-text"></i> Alquileres
+            </a>
+        </div>
+
+        <div class="sidebar-item">
+            <a href="{% url 'devoluciones:lista' %}" class="sidebar-link">
+                <i class="bi bi-arrow-return-left"></i> Devoluciones
+            </a>
+        </div>
+
+        <div class="sidebar-item">
+            <a href="{% url 'multas:lista' %}" class="sidebar-link">
+                <i class="bi bi-exclamation-triangle"></i> Multas
+            </a>
+        </div>
+
+        <!-- Menú Reportes y Sistema -->
+        <div class="sidebar-section">Reportes y Sistema</div>
+
+        <div class="sidebar-item">
+            <a href="{% url 'reportes:lista' %}" class="sidebar-link">
+                <i class="bi bi-bar-chart"></i> Reportes
+            </a>
+        </div>
+
+        <div class="sidebar-item">
+            <a href="{% url 'auditoria:lista' %}" class="sidebar-link">
+                <i class="bi bi-shield-check"></i> Auditoría
+            </a>
+        </div>
+
+        <div class="sidebar-item">
+            <a href="{% url 'chatbot:index' %}" class="sidebar-link">
+                <i class="bi bi-chat-dots"></i> Chatbot IA
+            </a>
+        </div>
+
+        <!-- Cerrar sesión -->
+        <div class="sidebar-section">Cuenta</div>
+        <div class="sidebar-item" style="margin-bottom: 20px;">
+            <a href="{% url 'logout' %}" class="sidebar-link">
+                <i class="bi bi-box-arrow-left"></i> Cerrar Sesión
+            </a>
+        </div>
+
+    </div>
+
+    <!-- ===== CONTENIDO PRINCIPAL ===== -->
+    <div id="main-content">
+
+        <!-- Navbar superior -->
+        <div id="topbar">
+            <div class="d-flex align-items-center gap-3">
+                <!-- Botón para colapsar sidebar -->
+                <button id="sidebarToggle">
+                    <i class="bi bi-list"></i>
+                </button>
+                <!-- Breadcrumb -->
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0" style="font-size: 0.85rem;">
+                        {% block breadcrumb %}
+                        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+                        {% endblock %}
+                    </ol>
+                </nav>
+            </div>
+
+            <!-- Info del usuario -->
+            <div class="d-flex align-items-center gap-3">
+                <!-- Notificaciones -->
+                <button class="btn btn-light btn-sm position-relative">
+                    <i class="bi bi-bell"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
+                        3
+                    </span>
+                </button>
+
+                <!-- Avatar y nombre -->
+                <div class="d-flex align-items-center gap-2">
+                    <div class="user-avatar">
+                        {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
+                    </div>
+                    <div>
+                        <div style="font-size: 0.85rem; font-weight: 600;">
+                            {{ request.user.get_full_name }}
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">
+                            {{ request.user.rol|capfirst }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Área de contenido -->
+        <div class="content-area">
+
+            <!-- Mensajes de alerta -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Toggle sidebar en móvil
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('show');
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

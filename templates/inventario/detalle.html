@@ -1,0 +1,96 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Categorías{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+<li class="breadcrumb-item"><a href="{% url 'inventario:lista' %}">Inventario</a></li>
+<li class="breadcrumb-item active">Categorías</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="page-title">Categorías</div>
+        <div class="page-subtitle">Gestiona las categorías de herramientas</div>
+    </div>
+    <a href="{% url 'inventario:lista' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Volver
+    </a>
+</div>
+
+<div class="row g-3">
+
+    <!-- Formulario crear categoría -->
+    <div class="col-xl-4">
+        <div class="card">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3">Nueva Categoría</h6>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" name="nombre" class="form-control"
+                               placeholder="Ej: Andamios" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Descripción</label>
+                        <textarea name="descripcion" class="form-control" rows="2"
+                                  placeholder="Descripción opcional..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-plus-lg me-1"></i>Crear Categoría
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de categorías -->
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead style="background:#f8f9fa;">
+                        <tr style="font-size:0.8rem; color:#6c757d;">
+                            <th class="ps-4">Nombre</th>
+                            <th>Descripción</th>
+                            <th>Herramientas</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cat in categorias %}
+                        <tr style="font-size:0.875rem;">
+                            <td class="ps-4"><strong>{{ cat.nombre }}</strong></td>
+                            <td class="text-muted">{{ cat.descripcion|default:"-" }}</td>
+                            <td>
+                                <span class="badge bg-primary">
+                                    {{ cat.herramientas.count }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if cat.activo %}
+                                    <span class="badge bg-success">Activo</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Inactivo</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">
+                                No hay categorías registradas
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

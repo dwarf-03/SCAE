@@ -1,0 +1,142 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Devoluciones{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+<li class="breadcrumb-item active">Devoluciones</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="page-title">Devoluciones</div>
+        <div class="page-subtitle">{{ total }} devoluciones registradas</div>
+    </div>
+    <!-- Botón para ir a alquileres activos -->
+    <a href="{% url 'alquileres:lista' %}?estado=activo" class="btn btn-primary">
+        <i class="bi bi-arrow-return-left me-1"></i>Recibir Herramienta
+    </a>
+</div>
+
+<!-- Alquileres activos pendientes de devolución -->
+<div class="card mb-4">
+    <div class="card-header bg-white border-0 pt-4 px-4">
+        <h6 class="fw-bold mb-0 text-warning">
+            <i class="bi bi-clock me-2"></i>Alquileres Pendientes de Devolución
+        </h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background:#f8f9fa;">
+                    <tr style="font-size:0.8rem; color:#6c757d;">
+                        <th class="ps-4">N° Alquiler</th>
+                        <th>Cliente</th>
+                        <th>Fecha Fin</th>
+                        <th>Estado</th>
+                        <th class="text-center">Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for alquiler in alquileres_activos %}
+                    <tr style="font-size:0.875rem;">
+                        <td class="ps-4"><strong>{{ alquiler.numero }}</strong></td>
+                        <td>{{ alquiler.cliente.nombre_completo }}</td>
+                        <td>
+                            {{ alquiler.fecha_fin }}
+                            {% if alquiler.esta_vencido %}
+                                <span class="badge bg-danger ms-1">
+                                    {{ alquiler.dias_vencidos }}d retraso
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if alquiler.esta_vencido %}
+                                <span class="badge bg-danger">Vencido</span>
+                            {% else %}
+                                <span class="badge bg-success">Activo</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <a href="{% url 'devoluciones:recibir' alquiler.pk %}"
+                               class="btn btn-sm btn-primary">
+                                <i class="bi bi-arrow-return-left me-1"></i>Recibir
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-3">
+                            No hay alquileres pendientes de devolución
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Historial de devoluciones -->
+<div class="card">
+    <div class="card-header bg-white border-0 pt-4 px-4">
+        <h6 class="fw-bold mb-0">Historial de Devoluciones</h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background:#f8f9fa;">
+                    <tr style="font-size:0.8rem; color:#6c757d;">
+                        <th class="ps-4">Alquiler</th>
+                        <th>Cliente</th>
+                        <th>Fecha Devolución</th>
+                        <th>Estado</th>
+                        <th>Multa</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dev in devoluciones %}
+                    <tr style="font-size:0.875rem;">
+                        <td class="ps-4"><strong>{{ dev.alquiler.numero }}</strong></td>
+                        <td>{{ dev.alquiler.cliente.nombre_completo }}</td>
+                        <td>{{ dev.fecha_devolucion }}</td>
+                        <td>
+                            {% if dev.estado == 'completa' %}
+                                <span class="badge bg-success">Completa</span>
+                            {% elif dev.estado == 'parcial' %}
+                                <span class="badge bg-warning text-dark">Parcial</span>
+                            {% else %}
+                                <span class="badge bg-danger">Con Daños</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if dev.tiene_multa %}
+                                <span class="badge bg-danger">Sí</span>
+                            {% else %}
+                                <span class="badge bg-success">No</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <a href="{% url 'devoluciones:detalle' dev.pk %}"
+                               class="btn btn-sm btn-outline-info">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            No hay devoluciones registradas
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

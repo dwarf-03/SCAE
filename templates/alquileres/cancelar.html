@@ -1,0 +1,59 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Cancelar Alquiler{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+<li class="breadcrumb-item"><a href="{% url 'alquileres:lista' %}">Alquileres</a></li>
+<li class="breadcrumb-item active">Cancelar</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body p-4 text-center">
+
+                <div style="width:70px; height:70px; background:#fff0f0; border-radius:50%;
+                            display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
+                    <i class="bi bi-x-circle text-danger" style="font-size:2rem;"></i>
+                </div>
+
+                <h5 class="fw-bold">¿Cancelar alquiler?</h5>
+                <p class="text-muted" style="font-size:0.875rem;">
+                    Estás a punto de cancelar el alquiler <strong>{{ alquiler.numero }}</strong>.
+                    Las herramientas volverán al inventario disponible.
+                </p>
+
+                <div style="background:#f8f9fa; border-radius:10px; padding:15px; margin-bottom:20px; text-align:left;">
+                    <div class="d-flex justify-content-between mb-1" style="font-size:0.875rem;">
+                        <span class="text-muted">Cliente</span>
+                        <strong>{{ alquiler.cliente.nombre_completo }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1" style="font-size:0.875rem;">
+                        <span class="text-muted">Fecha Fin</span>
+                        <strong>{{ alquiler.fecha_fin }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between" style="font-size:0.875rem;">
+                        <span class="text-muted">Total</span>
+                        <strong>${{ alquiler.total|floatformat:0 }}</strong>
+                    </div>
+                </div>
+
+                <form method="POST" class="d-flex gap-2 justify-content-center">
+                    {% csrf_token %}
+                    <a href="{% url 'alquileres:lista' %}" class="btn btn-outline-secondary">
+                        Volver
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-x-circle me-1"></i>Sí, cancelar
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

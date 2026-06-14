@@ -1,0 +1,170 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Detalle Alquiler{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+<li class="breadcrumb-item"><a href="{% url 'alquileres:lista' %}">Alquileres</a></li>
+<li class="breadcrumb-item active">{{ alquiler.numero }}</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="page-title">{{ alquiler.numero }}</div>
+        <div class="page-subtitle">{{ alquiler.cliente.nombre_completo }}</div>
+    </div>
+    <div class="d-flex gap-2">
+        {% if alquiler.estado == 'activo' %}
+        <a href="{% url 'alquileres:cancelar' alquiler.pk %}" class="btn btn-outline-danger">
+            <i class="bi bi-x-circle me-1"></i>Cancelar
+        </a>
+        {% endif %}
+        <a href="{% url 'alquileres:lista' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Volver
+        </a>
+    </div>
+</div>
+
+<div class="row g-3">
+
+    <!-- Detalles -->
+    <div class="col-xl-8">
+        <div class="card mb-3">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3">Herramientas Alquiladas</h6>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead style="background:#f8f9fa; font-size:0.8rem; color:#6c757d;">
+                            <tr>
+                                <th>Herramienta</th>
+                                <th>Cantidad</th>
+                                <th>Precio/Día</th>
+                                <th>Días</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detalle in detalles %}
+                            <tr style="font-size:0.875rem;">
+                                <td>
+                                    <div class="fw-semibold">{{ detalle.herramienta.nombre }}</div>
+                                    <div style="font-size:0.75rem; color:#6c757d;">{{ detalle.herramienta.codigo }}</div>
+                                </td>
+                                <td>{{ detalle.cantidad }}</td>
+                                <td>${{ detalle.precio_diario|floatformat:0 }}</td>
+                                <td>{{ alquiler.dias_alquiler }}</td>
+                                <td><strong>${{ detalle.subtotal|floatformat:0 }}</strong></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr style="font-size:0.875rem;">
+                                <td colspan="4" class="text-end fw-bold">Total:</td>
+                                <td><strong class="text-primary">${{ alquiler.total|floatformat:0 }}</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {% if alquiler.observaciones %}
+        <div class="card">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-2">Observaciones</h6>
+                <p class="text-muted mb-0" style="font-size:0.875rem;">{{ alquiler.observaciones }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Info lateral -->
+    <div class="col-xl-4">
+
+        <!-- Estado del alquiler -->
+        <div class="card mb-3">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3">Estado del Alquiler</h6>
+
+                <div class="text-center mb-3">
+                    {% if alquiler.estado == 'activo' %}
+                        <span class="badge bg-success" style="font-size:1rem; padding:10px 20px;">
+                            <i class="bi bi-check-circle me-2"></i>Activo
+                        </span>
+                    {% elif alquiler.estado == 'vencido' %}
+                        <span class="badge bg-danger" style="font-size:1rem; padding:10px 20px;">
+                            <i class="bi bi-exclamation-triangle me-2"></i>Vencido
+                        </span>
+                    {% elif alquiler.estado == 'devuelto' %}
+                        <span class="badge bg-secondary" style="font-size:1rem; padding:10px 20px;">
+                            <i class="bi bi-arrow-return-left me-2"></i>Devuelto
+                        </span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark" style="font-size:1rem; padding:10px 20px;">
+                            Cancelado
+                        </span>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex justify-content-between mb-2" style="font-size:0.875rem;">
+                    <span class="text-muted">N° Alquiler</span>
+                    <strong>{{ alquiler.numero }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2" style="font-size:0.875rem;">
+                    <span class="text-muted">Fecha Inicio</span>
+                    <strong>{{ alquiler.fecha_inicio }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2" style="font-size:0.875rem;">
+                    <span class="text-muted">Fecha Fin</span>
+                    <strong>{{ alquiler.fecha_fin }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2" style="font-size:0.875rem;">
+                    <span class="text-muted">Días</span>
+                    <strong>{{ alquiler.dias_alquiler }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2" style="font-size:0.875rem;">
+                    <span class="text-muted">Canal</span>
+                    <strong>{{ alquiler.get_canal_display }}</strong>
+                </div>
+                <div class="d-flex justify-content-between" style="font-size:0.875rem;">
+                    <span class="text-muted">Registrado por</span>
+                    <strong>{{ alquiler.registrado_por.get_full_name }}</strong>
+                </div>
+
+                {% if alquiler.esta_vencido %}
+                <div class="alert alert-danger mt-3 mb-0" style="font-size:0.8rem;">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>{{ alquiler.dias_vencidos }} días</strong> de retraso
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Info del cliente -->
+        <div class="card">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3">Cliente</h6>
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div style="width:45px; height:45px; background:linear-gradient(135deg,#4361ee,#3a0ca3);
+                                border-radius:50%; display:flex; align-items:center; justify-content:center;
+                                color:white; font-weight:700;">
+                        {{ alquiler.cliente.usuario.first_name|first|upper }}{{ alquiler.cliente.usuario.last_name|first|upper }}
+                    </div>
+                    <div>
+                        <div class="fw-semibold">{{ alquiler.cliente.nombre_completo }}</div>
+                        <div style="font-size:0.75rem; color:#6c757d;">{{ alquiler.cliente.telefono }}</div>
+                    </div>
+                </div>
+                <a href="{% url 'clientes:detalle' alquiler.cliente.pk %}"
+                   class="btn btn-outline-primary btn-sm w-100">
+                    Ver perfil completo
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCAE - Iniciar Sesión</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+
+        body {
+            background: linear-gradient(135deg, #1a1f2e 0%, #2d3449 50%, #1a1f2e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Tarjeta del login */
+        .login-card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 45px 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        /* Logo y título */
+        .login-logo {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .login-logo .logo-icon {
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, #4361ee, #3a0ca3);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 1.8rem;
+            color: white;
+        }
+
+        .login-logo h4 {
+            font-weight: 700;
+            color: #1a1f2e;
+            margin-bottom: 5px;
+        }
+
+        .login-logo p {
+            color: #6c757d;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        /* Campos del formulario */
+        .form-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #444;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            padding: 12px 15px;
+            border: 1.5px solid #e0e0e0;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: #4361ee;
+            box-shadow: 0 0 0 3px rgba(67,97,238,0.15);
+        }
+
+        /* Botón de login */
+        .btn-login {
+            background: linear-gradient(135deg, #4361ee, #3a0ca3);
+            border: none;
+            border-radius: 10px;
+            padding: 13px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+            transition: all 0.3s;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(67,97,238,0.4);
+        }
+
+        /* Input group icon */
+        .input-group-text {
+            border-radius: 10px 0 0 10px;
+            border: 1.5px solid #e0e0e0;
+            border-right: none;
+            background: #f8f9fa;
+            color: #6c757d;
+        }
+
+        .input-group .form-control {
+            border-radius: 0 10px 10px 0;
+            border-left: none;
+        }
+
+        .input-group .form-control:focus {
+            border-color: #4361ee;
+        }
+
+        .input-group:focus-within .input-group-text {
+            border-color: #4361ee;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+
+    <!-- Logo -->
+    <div class="login-logo">
+        <div class="logo-icon">
+            <i class="bi bi-tools"></i>
+        </div>
+        <h4>SCAE</h4>
+        <p>Sistema de Alquiler de Equipos</p>
+    </div>
+
+    <!-- Alertas -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert" style="font-size: 0.85rem; border-radius: 10px;">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Formulario -->
+    <form method="POST">
+        {% csrf_token %}
+
+        <!-- Usuario -->
+        <div class="mb-3">
+            <label class="form-label">Usuario</label>
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="bi bi-person"></i>
+                </span>
+                <input type="text" name="username" class="form-control"
+                       placeholder="Ingresa tu usuario" required autofocus>
+            </div>
+        </div>
+
+        <!-- Contraseña -->
+        <div class="mb-4">
+            <label class="form-label">Contraseña</label>
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="bi bi-lock"></i>
+                </span>
+                <input type="password" name="password" id="passwordInput"
+                       class="form-control" placeholder="Ingresa tu contraseña" required>
+                <button class="btn btn-outline-secondary" type="button"
+                        onclick="togglePassword()" style="border-radius: 0 10px 10px 0;">
+                    <i class="bi bi-eye" id="eyeIcon"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Botón -->
+        <button type="submit" class="btn btn-primary btn-login w-100 text-white">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
+        </button>
+
+    </form>
+
+    <!-- Footer -->
+    <div class="text-center mt-4" style="font-size: 0.78rem; color: #aaa;">
+        © 2024 SCAE - Todos los derechos reservados
+    </div>
+
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Mostrar u ocultar contraseña
+    function togglePassword() {
+        const input = document.getElementById('passwordInput');
+        const icon = document.getElementById('eyeIcon');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.replace('bi-eye', 'bi-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.replace('bi-eye-slash', 'bi-eye');
+        }
+    }
+</script>
+
+</body>
+</html>

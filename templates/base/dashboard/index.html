@@ -1,0 +1,186 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Dashboard</li>
+{% endblock %}
+
+{% block content %}
+
+<!-- Título -->
+<div class="page-title">Dashboard</div>
+<div class="page-subtitle">Resumen general del sistema</div>
+
+<!-- ===== TARJETAS DE ESTADÍSTICAS ===== -->
+<div class="row g-3 mb-4">
+
+    <!-- Total Herramientas -->
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card" style="background: linear-gradient(135deg, #4361ee, #3a0ca3);">
+            <i class="bi bi-tools stat-icon"></i>
+            <div class="stat-number">{{ total_herramientas }}</div>
+            <div class="stat-label">Total Herramientas</div>
+        </div>
+    </div>
+
+    <!-- Disponibles -->
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card" style="background: linear-gradient(135deg, #2ec4b6, #1a9e93);">
+            <i class="bi bi-check-circle stat-icon"></i>
+            <div class="stat-number">{{ herramientas_disponibles }}</div>
+            <div class="stat-label">Disponibles</div>
+        </div>
+    </div>
+
+    <!-- Alquiladas -->
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card" style="background: linear-gradient(135deg, #ff9f1c, #e07b00);">
+            <i class="bi bi-file-earmark-text stat-icon"></i>
+            <div class="stat-number">{{ herramientas_alquiladas }}</div>
+            <div class="stat-label">Alquiladas</div>
+        </div>
+    </div>
+
+    <!-- Vencidas -->
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card" style="background: linear-gradient(135deg, #e63946, #c1121f);">
+            <i class="bi bi-exclamation-triangle stat-icon"></i>
+            <div class="stat-number">{{ alquileres_vencidos }}</div>
+            <div class="stat-label">Alquileres Vencidos</div>
+        </div>
+    </div>
+
+    <!-- Clientes -->
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card" style="background: linear-gradient(135deg, #7209b7, #560bad);">
+            <i class="bi bi-people stat-icon"></i>
+            <div class="stat-number">{{ total_clientes }}</div>
+            <div class="stat-label">Clientes Registrados</div>
+        </div>
+    </div>
+
+    <!-- Ingresos -->
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card" style="background: linear-gradient(135deg, #06d6a0, #028a5b);">
+            <i class="bi bi-currency-dollar stat-icon"></i>
+            <div class="stat-number">${{ ingresos_mes|floatformat:0 }}</div>
+            <div class="stat-label">Ingresos del Mes</div>
+        </div>
+    </div>
+
+    <!-- Multas -->
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card" style="background: linear-gradient(135deg, #f72585, #b5179e);">
+            <i class="bi bi-cash-stack stat-icon"></i>
+            <div class="stat-number">${{ total_multas|floatformat:0 }}</div>
+            <div class="stat-label">Multas Generadas</div>
+        </div>
+    </div>
+
+    <!-- Alquileres Activos -->
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card" style="background: linear-gradient(135deg, #4cc9f0, #4895ef);">
+            <i class="bi bi-activity stat-icon"></i>
+            <div class="stat-number">{{ alquileres_activos }}</div>
+            <div class="stat-label">Alquileres Activos</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ===== TABLAS ===== -->
+<div class="row g-3">
+
+    <!-- Alquileres Recientes -->
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0">Alquileres Recientes</h6>
+                    <a href="{% url 'alquileres:lista' %}" class="btn btn-sm btn-primary">
+                        Ver todos
+                    </a>
+                </div>
+            </div>
+            <div class="card-body px-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr style="font-size: 0.8rem; color: #6c757d;">
+                                <th>N° Alquiler</th>
+                                <th>Cliente</th>
+                                <th>Fecha Fin</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for alquiler in alquileres_recientes %}
+                            <tr style="font-size: 0.875rem;">
+                                <td><strong>{{ alquiler.numero }}</strong></td>
+                                <td>{{ alquiler.cliente.nombre_completo }}</td>
+                                <td>{{ alquiler.fecha_fin }}</td>
+                                <td>${{ alquiler.total|floatformat:0 }}</td>
+                                <td>
+                                    {% if alquiler.estado == 'activo' %}
+                                        <span class="badge bg-success">Activo</span>
+                                    {% elif alquiler.estado == 'vencido' %}
+                                        <span class="badge bg-danger">Vencido</span>
+                                    {% elif alquiler.estado == 'devuelto' %}
+                                        <span class="badge bg-secondary">Devuelto</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">{{ alquiler.estado }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    No hay alquileres registrados
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alquileres Vencidos -->
+    <div class="col-xl-4">
+        <div class="card">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h6 class="fw-bold mb-0 text-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Vencidos
+                </h6>
+            </div>
+            <div class="card-body px-4">
+                {% for alquiler in lista_vencidos %}
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <div>
+                        <div style="font-size: 0.85rem; font-weight: 600;">
+                            {{ alquiler.cliente.nombre_completo }}
+                        </div>
+                        <div style="font-size: 0.75rem; color: #6c757d;">
+                            {{ alquiler.numero }}
+                        </div>
+                    </div>
+                    <span class="badge bg-danger">
+                        {{ alquiler.dias_vencidos }} días
+                    </span>
+                </div>
+                {% empty %}
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+                    <p class="mt-2 mb-0">Sin vencidos</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

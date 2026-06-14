@@ -1,0 +1,59 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Eliminar Cliente{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+<li class="breadcrumb-item"><a href="{% url 'clientes:lista' %}">Clientes</a></li>
+<li class="breadcrumb-item active">Eliminar</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body p-4 text-center">
+
+                <div style="width:70px; height:70px; background:#fff0f0; border-radius:50%;
+                            display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
+                    <i class="bi bi-person-x text-danger" style="font-size:2rem;"></i>
+                </div>
+
+                <h5 class="fw-bold">¿Eliminar cliente?</h5>
+                <p class="text-muted" style="font-size:0.875rem;">
+                    Estás a punto de desactivar a <strong>{{ cliente.nombre_completo }}</strong>.
+                    El cliente no podrá acceder al sistema.
+                </p>
+
+                <div style="background:#f8f9fa; border-radius:10px; padding:15px; margin-bottom:20px; text-align:left;">
+                    <div class="d-flex justify-content-between mb-1" style="font-size:0.875rem;">
+                        <span class="text-muted">Documento</span>
+                        <strong>{{ cliente.numero_documento }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1" style="font-size:0.875rem;">
+                        <span class="text-muted">Teléfono</span>
+                        <strong>{{ cliente.telefono }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between" style="font-size:0.875rem;">
+                        <span class="text-muted">Alquileres</span>
+                        <strong>{{ cliente.total_alquileres }}</strong>
+                    </div>
+                </div>
+
+                <form method="POST" class="d-flex gap-2 justify-content-center">
+                    {% csrf_token %}
+                    <a href="{% url 'clientes:lista' %}" class="btn btn-outline-secondary">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-person-x me-1"></i>Sí, eliminar
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
