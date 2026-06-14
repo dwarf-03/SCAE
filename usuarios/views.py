@@ -8,6 +8,33 @@ from clientes.models import Cliente
 from multas.models import Multa
 from django.utils import timezone
 from django.db.models import Sum
+from functools import wraps
+from django.http import HttpResponseForbidden
+
+
+
+def solo_admin(view_func):
+    # Permite acceso solo a administradores
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        if request.user.rol != 'administrador':
+            return HttpResponseForbidden('No tienes permisos para acceder a esta página.')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+def admin_o_empleado(view_func):
+    # Permite acceso a administradores y empleados
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        if request.user.rol not in ['administrador', 'empleado']:
+            return HttpResponseForbidden('No tienes permisos para acceder a esta página.')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
 
 def login_view(request):
     # Redirige al dashboard si ya está autenticado
@@ -22,7 +49,11 @@ def login_view(request):
         if user is not None:
             login(request, user)
             messages.success(request, f'Bienvenido, {user.get_full_name()}')
-            return redirect('dashboard')
+            # Redirige según el rol del usuario
+            if user.rol in ['administrador', 'empleado']:
+                return redirect('dashboard')
+            else:
+                return redirect('dashboard')
         else:
             messages.error(request, 'Usuario o contraseña incorrectos')
 
@@ -38,6 +69,10 @@ def logout_view(request):
 
 @login_required
 def dashboard(request):
+    # Redirige a clientes a su propio panel
+    if request.user.rol == 'cliente':
+        return redirect('clientes:mi_perfil')
+
     hoy = timezone.now().date()
 
     # Estadísticas de inventario

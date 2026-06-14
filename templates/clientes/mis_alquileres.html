@@ -1,0 +1,83 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Mis Alquileres{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'clientes:mi_perfil' %}">Mi Perfil</a></li>
+<li class="breadcrumb-item active">Mis Alquileres</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="page-title">Mis Alquileres</div>
+        <div class="page-subtitle">Historial completo de tus alquileres</div>
+    </div>
+    <a href="{% url 'clientes:solicitar_alquiler' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>Nuevo Alquiler
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background:#f8f9fa;">
+                    <tr style="font-size:0.8rem; color:#6c757d;">
+                        <th class="ps-4">N° Alquiler</th>
+                        <th>Fecha Inicio</th>
+                        <th>Fecha Fin</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for alquiler in alquileres %}
+                    <tr style="font-size:0.875rem;">
+                        <td class="ps-4"><strong>{{ alquiler.numero }}</strong></td>
+                        <td>{{ alquiler.fecha_inicio }}</td>
+                        <td>
+                            {{ alquiler.fecha_fin }}
+                            {% if alquiler.esta_vencido %}
+                                <span class="badge bg-danger ms-1">Vencido</span>
+                            {% endif %}
+                        </td>
+                        <td>${{ alquiler.total|floatformat:0 }}</td>
+                        <td>
+                            {% if alquiler.estado == 'activo' %}
+                                <span class="badge bg-success">Activo</span>
+                            {% elif alquiler.estado == 'vencido' %}
+                                <span class="badge bg-danger">Vencido</span>
+                            {% elif alquiler.estado == 'devuelto' %}
+                                <span class="badge bg-secondary">Devuelto</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Cancelado</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <a href="{% url 'clientes:mi_alquiler_detalle' alquiler.pk %}"
+                               class="btn btn-sm btn-outline-info">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-5">
+                            <i class="bi bi-file-earmark-text" style="font-size:2rem;"></i>
+                            <p class="mt-2">No tienes alquileres registrados</p>
+                            <a href="{% url 'clientes:solicitar_alquiler' %}" class="btn btn-primary btn-sm">
+                                Solicitar primer alquiler
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

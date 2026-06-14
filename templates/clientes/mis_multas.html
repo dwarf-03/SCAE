@@ -1,0 +1,66 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Mis Multas{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'clientes:mi_perfil' %}">Mi Perfil</a></li>
+<li class="breadcrumb-item active">Mis Multas</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="page-title">Mis Multas</div>
+        <div class="page-subtitle">Historial de multas generadas</div>
+    </div>
+    <a href="{% url 'clientes:mi_perfil' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Volver
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background:#f8f9fa;">
+                    <tr style="font-size:0.8rem; color:#6c757d;">
+                        <th class="ps-4">Alquiler</th>
+                        <th>Fecha Vencimiento</th>
+                        <th>Días Retraso</th>
+                        <th>Monto</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for multa in multas %}
+                    <tr style="font-size:0.875rem;">
+                        <td class="ps-4"><strong>{{ multa.alquiler.numero }}</strong></td>
+                        <td>{{ multa.fecha_vencimiento }}</td>
+                        <td><span class="badge bg-danger">{{ multa.dias_retraso }} días</span></td>
+                        <td class="text-danger fw-bold">${{ multa.monto_total|floatformat:0 }}</td>
+                        <td>
+                            {% if multa.estado == 'pendiente' %}
+                                <span class="badge bg-danger">Pendiente</span>
+                            {% elif multa.estado == 'pagada' %}
+                                <span class="badge bg-success">Pagada</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Condonada</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-5">
+                            <i class="bi bi-check-circle text-success" style="font-size:2rem;"></i>
+                            <p class="mt-2">No tienes multas registradas</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

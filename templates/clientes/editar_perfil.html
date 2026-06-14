@@ -1,0 +1,95 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Editar Perfil{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'clientes:mi_perfil' %}">Mi Perfil</a></li>
+<li class="breadcrumb-item active">Editar Perfil</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="page-title">Editar Mi Perfil</div>
+        <div class="page-subtitle">Actualiza tu información personal</div>
+    </div>
+    <a href="{% url 'clientes:mi_perfil' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Volver
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body p-4">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="row g-3">
+
+                        <div class="col-12">
+                            <h6 class="fw-bold text-primary mb-0">
+                                <i class="bi bi-person me-2"></i>Datos Personales
+                            </h6>
+                            <hr>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Nombres</label>
+                            <input type="text" name="first_name" class="form-control"
+                                   value="{{ cliente.usuario.first_name }}" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Apellidos</label>
+                            <input type="text" name="last_name" class="form-control"
+                                   value="{{ cliente.usuario.last_name }}" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Correo</label>
+                            <input type="email" name="email" class="form-control"
+                                   value="{{ cliente.email }}" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Teléfono</label>
+                            <input type="text" name="telefono" class="form-control"
+                                   value="{{ cliente.telefono }}" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Teléfono Alternativo</label>
+                            <input type="text" name="telefono_alternativo" class="form-control"
+                                   value="{{ cliente.telefono_alternativo|default:'' }}">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ciudad</label>
+                            <input type="text" name="ciudad" class="form-control"
+                                   value="{{ cliente.ciudad }}" required>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Dirección</label>
+                            <input type="text" name="direccion" class="form-control"
+                                   value="{{ cliente.direccion }}" required>
+                        </div>
+
+                        <div class="col-12 d-flex gap-2 justify-content-end">
+                            <a href="{% url 'clientes:mi_perfil' %}" class="btn btn-outline-secondary">
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-1"></i>Guardar Cambios
+                            </button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

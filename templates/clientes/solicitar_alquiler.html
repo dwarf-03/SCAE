@@ -1,0 +1,286 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Solicitar Alquiler{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'clientes:mi_perfil' %}">Mi Perfil</a></li>
+<li class="breadcrumb-item active">Solicitar Alquiler</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .herramienta-card {
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .herramienta-card:hover { border-color: #4361ee; background: #f8f9ff; }
+    .herramienta-card.selected { border-color: #4361ee; background: #f0f3ff; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="page-title">Solicitar Alquiler</div>
+        <div class="page-subtitle">Selecciona las herramientas que necesitas</div>
+    </div>
+    <a href="{% url 'clientes:mi_perfil' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Volver
+    </a>
+</div>
+
+<form method="POST" id="form-alquiler">
+    {% csrf_token %}
+
+    <div class="row g-3">
+
+        <!-- Panel izquierdo -->
+        <div class="col-xl-8">
+
+            <!-- Fechas -->
+            <div class="card mb-3">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-primary mb-3">
+                        <i class="bi bi-calendar me-2"></i>Fechas del Alquiler
+                    </h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Fecha Inicio <span class="text-danger">*</span></label>
+                            <input type="date" name="fecha_inicio" id="fecha_inicio"
+                                   class="form-control" value="{{ hoy }}"
+                                   min="{{ hoy }}" required onchange="actualizarMinFin()">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Fecha Devolución <span class="text-danger">*</span></label>
+                            <input type="date" name="fecha_fin" id="fecha_fin"
+                                   class="form-control" min="{{ hoy }}"
+                                   required onchange="calcularTotal()">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Observaciones</label>
+                            <textarea name="observaciones" class="form-control" rows="2"
+                                      placeholder="Indica cualquier observación sobre tu solicitud..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Herramientas disponibles -->
+            <div class="card">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-primary mb-3">
+                        <i class="bi bi-tools me-2"></i>Herramientas Disponibles
+                    </h6>
+
+                    <input type="text" id="buscar-herramienta" class="form-control mb-3"
+                           placeholder="Buscar herramienta...">
+
+                    <div class="row g-2 mb-3" id="lista-herramientas">
+                        {% for h in herramientas %}
+                        <div class="col-md-6 herramienta-item">
+                            <div class="herramienta-card"
+                                 data-id="{{ h.pk }}"
+                                 data-nombre="{{ h.nombre }}"
+                                 data-precio="{{ h.precio_diario }}"
+                                 data-disponible="{{ h.cantidad_disponible }}"
+                                 onclick="seleccionar(this)">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <div class="fw-semibold" style="font-size:0.875rem;">{{ h.nombre }}</div>
+                                        <div style="font-size:0.75rem; color:#6c757d;">
+                                            {{ h.codigo }} | {{ h.categoria.nombre }}
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-primary fw-bold">${{ h.precio_diario|floatformat:0 }}/día</div>
+                                        <div style="font-size:0.75rem; color:#6c757d;">
+                                            Disp: {{ h.cantidad_disponible }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12 text-center text-muted py-4">
+                            <i class="bi bi-tools" style="font-size:2rem;"></i>
+                            <p class="mt-2">No hay herramientas disponibles</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Tabla seleccionadas -->
+                    <div id="seleccionadas-container" style="display:none;">
+                        <h6 class="fw-semibold mb-2">Herramientas Seleccionadas</h6>
+                        <table class="table table-bordered" style="font-size:0.875rem;">
+                            <thead style="background:#f8f9fa; font-size:0.8rem;">
+                                <tr>
+                                    <th>Herramienta</th>
+                                    <th width="120">Cantidad</th>
+                                    <th width="120">Subtotal</th>
+                                    <th width="50"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-seleccionadas"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel derecho -->
+        <div class="col-xl-4">
+            <div class="card" style="position:sticky; top:80px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3">
+                        <i class="bi bi-calculator me-2 text-primary"></i>Resumen
+                    </h6>
+
+                    <div class="d-flex justify-content-between mb-2" style="font-size:0.875rem;">
+                        <span class="text-muted">Días de alquiler</span>
+                        <strong id="resumen-dias">0</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2" style="font-size:0.875rem;">
+                        <span class="text-muted">Herramientas</span>
+                        <strong id="resumen-items">0</strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-4">
+                        <span class="fw-bold">Total Estimado</span>
+                        <strong class="text-primary" style="font-size:1.2rem;" id="resumen-total">$0</strong>
+                    </div>
+
+                    <div class="alert alert-info" style="font-size:0.8rem;">
+                        <i class="bi bi-info-circle me-2"></i>
+                        El total puede variar según confirmación del personal.
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-send me-1"></i>Confirmar Solicitud
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let seleccionadas = {};
+
+    function seleccionar(el) {
+        const id = el.dataset.id;
+        const nombre = el.dataset.nombre;
+        const precio = parseFloat(el.dataset.precio);
+        const disponible = parseInt(el.dataset.disponible);
+
+        if (seleccionadas[id]) {
+            delete seleccionadas[id];
+            el.classList.remove('selected');
+        } else {
+            seleccionadas[id] = { nombre, precio, cantidad: 1, disponible };
+            el.classList.add('selected');
+        }
+        actualizarTabla();
+        calcularTotal();
+    }
+
+    function actualizarTabla() {
+        const tbody = document.getElementById('tbody-seleccionadas');
+        const container = document.getElementById('seleccionadas-container');
+        tbody.innerHTML = '';
+
+        const ids = Object.keys(seleccionadas);
+        container.style.display = ids.length > 0 ? 'block' : 'none';
+
+        ids.forEach(id => {
+            const h = seleccionadas[id];
+            const dias = getDias();
+            const sub = h.precio * h.cantidad * dias;
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>
+                        ${h.nombre}
+                        <input type="hidden" name="herramienta_id" value="${id}">
+                    </td>
+                    <td>
+                        <input type="number" name="cantidad" class="form-control form-control-sm"
+                               value="${h.cantidad}" min="1" max="${h.disponible}"
+                               onchange="cambiarCantidad(${id}, this.value)">
+                    </td>
+                    <td>$${Math.round(sub).toLocaleString()}</td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                onclick="seleccionar(document.querySelector('[data-id=\'${id}\']'))">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        document.getElementById('resumen-items').textContent = ids.length;
+    }
+
+    function cambiarCantidad(id, valor) {
+        seleccionadas[id].cantidad = parseInt(valor) || 1;
+        calcularTotal();
+    }
+
+    function getDias() {
+        const inicio = document.querySelector('[name=fecha_inicio]').value;
+        const fin = document.querySelector('[name=fecha_fin]').value;
+        if (!inicio || !fin) return 0;
+        const diff = new Date(fin) - new Date(inicio);
+        return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+    }
+
+    function calcularTotal() {
+        const dias = getDias();
+        document.getElementById('resumen-dias').textContent = dias;
+
+        let total = 0;
+        Object.values(seleccionadas).forEach(h => {
+            total += h.precio * h.cantidad * dias;
+        });
+
+        document.getElementById('resumen-total').textContent = '$' + Math.round(total).toLocaleString();
+        actualizarTabla();
+    }
+
+    function actualizarMinFin() {
+        const inicio = document.getElementById('fecha_inicio').value;
+        const fin = document.getElementById('fecha_fin');
+        if (inicio) {
+            const minFin = new Date(inicio);
+            minFin.setDate(minFin.getDate() + 1);
+            const minFinStr = minFin.toISOString().split('T')[0];
+            fin.min = minFinStr;
+            if (fin.value && fin.value <= inicio) {
+                fin.value = minFinStr;
+            }
+        }
+        calcularTotal();
+    }
+
+    document.getElementById('buscar-herramienta').addEventListener('input', function() {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('.herramienta-item').forEach(item => {
+            item.style.display = item.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const hoy = new Date().toISOString().split('T')[0];
+        document.getElementById('fecha_inicio').min = hoy;
+        actualizarMinFin();
+    });
+</script>
+{% endblock %}

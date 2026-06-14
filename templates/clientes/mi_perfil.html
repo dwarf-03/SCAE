@@ -1,0 +1,196 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Mi Perfil{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Mi Perfil</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="page-title">Bienvenido, {{ cliente.nombre_completo }}</div>
+        <div class="page-subtitle">Panel de cliente</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'clientes:solicitar_alquiler' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>Solicitar Alquiler
+        </a>
+        <a href="{% url 'clientes:editar_perfil' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-pencil me-1"></i>Editar Perfil
+        </a>
+        <a href="{% url 'clientes:cambiar_password' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-lock me-1"></i>Contraseña
+        </a>
+    </div>
+</div>
+
+<div class="row g-3">
+
+    <!-- Estadísticas -->
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card" style="background:linear-gradient(135deg,#4361ee,#3a0ca3);">
+            <i class="bi bi-file-earmark-text stat-icon"></i>
+            <div class="stat-number">{{ cliente.total_alquileres }}</div>
+            <div class="stat-label">Total Alquileres</div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card" style="background:linear-gradient(135deg,#2ec4b6,#1a9e93);">
+            <i class="bi bi-activity stat-icon"></i>
+            <div class="stat-number">{{ cliente.alquileres_activos }}</div>
+            <div class="stat-label">Alquileres Activos</div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card" style="background:linear-gradient(135deg,#e63946,#c1121f);">
+            <i class="bi bi-exclamation-triangle stat-icon"></i>
+            <div class="stat-number">{{ multas.count }}</div>
+            <div class="stat-label">Multas Pendientes</div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card" style="background:linear-gradient(135deg,#f72585,#b5179e);">
+            <i class="bi bi-cash-stack stat-icon"></i>
+            <div class="stat-number">${{ cliente.deuda_total|floatformat:0 }}</div>
+            <div class="stat-label">Deuda Total</div>
+        </div>
+    </div>
+
+    <!-- Info personal -->
+    <div class="col-xl-4">
+        <div class="card">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3">Mi Información</h6>
+
+                <!-- Avatar -->
+                <div class="text-center mb-3">
+                    <div style="width:70px; height:70px; background:linear-gradient(135deg,#4361ee,#3a0ca3);
+                                border-radius:50%; display:flex; align-items:center; justify-content:center;
+                                color:white; font-weight:700; font-size:1.5rem; margin:0 auto 10px;">
+                        {{ cliente.usuario.first_name|first|upper }}{{ cliente.usuario.last_name|first|upper }}
+                    </div>
+                    <div class="fw-bold">{{ cliente.nombre_completo }}</div>
+                    <div style="font-size:0.8rem; color:#6c757d;">{{ cliente.email }}</div>
+                </div>
+
+                <hr>
+
+                <div class="d-flex justify-content-between mb-2" style="font-size:0.875rem;">
+                    <span class="text-muted">Documento</span>
+                    <strong>{{ cliente.numero_documento }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2" style="font-size:0.875rem;">
+                    <span class="text-muted">Teléfono</span>
+                    <strong>{{ cliente.telefono }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2" style="font-size:0.875rem;">
+                    <span class="text-muted">Ciudad</span>
+                    <strong>{{ cliente.ciudad }}</strong>
+                </div>
+                <div class="d-flex justify-content-between" style="font-size:0.875rem;">
+                    <span class="text-muted">Estado</span>
+                    {% if cliente.verificado %}
+                        <span class="badge bg-success">Verificado</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark">Pendiente</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alquileres -->
+    <div class="col-xl-8">
+        <div class="card mb-3">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0">Mis Alquileres</h6>
+                    <a href="{% url 'clientes:solicitar_alquiler' %}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i>Nuevo
+                    </a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead style="background:#f8f9fa; font-size:0.8rem; color:#6c757d;">
+                        <tr>
+                            <th class="ps-4">N° Alquiler</th>
+                            <th>Fecha Inicio</th>
+                            <th>Fecha Fin</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for alquiler in alquileres %}
+                        <tr style="font-size:0.875rem;">
+                            <td class="ps-4"><strong>{{ alquiler.numero }}</strong></td>
+                            <td>{{ alquiler.fecha_inicio }}</td>
+                            <td>{{ alquiler.fecha_fin }}</td>
+                            <td>${{ alquiler.total|floatformat:0 }}</td>
+                            <td>
+                                {% if alquiler.estado == 'activo' %}
+                                    <span class="badge bg-success">Activo</span>
+                                {% elif alquiler.estado == 'vencido' %}
+                                    <span class="badge bg-danger">Vencido</span>
+                                {% elif alquiler.estado == 'devuelto' %}
+                                    <span class="badge bg-secondary">Devuelto</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">Cancelado</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                No tienes alquileres registrados
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Multas pendientes -->
+        {% if multas %}
+        <div class="card">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h6 class="fw-bold mb-0 text-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Multas Pendientes
+                </h6>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead style="background:#f8f9fa; font-size:0.8rem; color:#6c757d;">
+                        <tr>
+                            <th class="ps-4">Alquiler</th>
+                            <th>Días Retraso</th>
+                            <th>Monto</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for multa in multas %}
+                        <tr style="font-size:0.875rem;">
+                            <td class="ps-4"><strong>{{ multa.alquiler.numero }}</strong></td>
+                            <td>{{ multa.dias_retraso }} días</td>
+                            <td class="text-danger fw-bold">${{ multa.monto_total|floatformat:0 }}</td>
+                            <td><span class="badge bg-danger">Pendiente</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}
