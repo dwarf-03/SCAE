@@ -1,0 +1,122 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Reporte Inventario{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+<li class="breadcrumb-item"><a href="{% url 'reportes:lista' %}">Reportes</a></li>
+<li class="breadcrumb-item active">Inventario</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="page-title">Reporte de Inventario</div>
+        <div class="page-subtitle">{{ total }} herramientas encontradas</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'reportes:inventario_pdf' %}?estado={{ estado }}&categoria={{ categoria }}"
+           class="btn btn-danger">
+            <i class="bi bi-file-pdf me-1"></i>PDF
+        </a>
+        <a href="{% url 'reportes:inventario_excel' %}?estado={{ estado }}&categoria={{ categoria }}"
+           class="btn btn-success">
+            <i class="bi bi-file-excel me-1"></i>Excel
+        </a>
+        <a href="{% url 'reportes:lista' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Volver
+        </a>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Categoría</label>
+                <select name="categoria" class="form-select">
+                    <option value="">Todas las categorías</option>
+                    {% for cat in categorias %}
+                    <option value="{{ cat.id }}" {% if categoria == cat.id|stringformat:"s" %}selected{% endif %}>
+                        {{ cat.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Estado</label>
+                <select name="estado" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="disponible" {% if estado == 'disponible' %}selected{% endif %}>Disponible</option>
+                    <option value="rentada" {% if estado == 'rentada' %}selected{% endif %}>Rentada</option>
+                    <option value="mantenimiento" {% if estado == 'mantenimiento' %}selected{% endif %}>Mantenimiento</option>
+                    <option value="fuera_servicio" {% if estado == 'fuera_servicio' %}selected{% endif %}>Fuera de Servicio</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search me-1"></i>Filtrar
+                </button>
+                <a href="{% url 'reportes:inventario' %}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabla -->
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background:#f8f9fa;">
+                    <tr style="font-size:0.8rem; color:#6c757d;">
+                        <th class="ps-4">Código</th>
+                        <th>Nombre</th>
+                        <th>Categoría</th>
+                        <th>Precio/Día</th>
+                        <th>Total</th>
+                        <th>Disponible</th>
+                        <th>Alquilada</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for h in herramientas %}
+                    <tr style="font-size:0.875rem;">
+                        <td class="ps-4"><strong>{{ h.codigo }}</strong></td>
+                        <td>{{ h.nombre }}</td>
+                        <td>{{ h.categoria.nombre }}</td>
+                        <td>${{ h.precio_diario|floatformat:0 }}</td>
+                        <td>{{ h.cantidad_total }}</td>
+                        <td><span class="badge bg-success">{{ h.cantidad_disponible }}</span></td>
+                        <td><span class="badge bg-warning text-dark">{{ h.cantidad_alquilada }}</span></td>
+                        <td>
+                            {% if h.estado == 'disponible' %}
+                                <span class="badge bg-success">Disponible</span>
+                            {% elif h.estado == 'rentada' %}
+                                <span class="badge bg-warning text-dark">Rentada</span>
+                            {% elif h.estado == 'mantenimiento' %}
+                                <span class="badge bg-info">Mantenimiento</span>
+                            {% else %}
+                                <span class="badge bg-danger">Fuera de Servicio</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-5">
+                            No hay herramientas con los filtros seleccionados
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

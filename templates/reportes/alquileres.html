@@ -1,0 +1,126 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Reporte Alquileres{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+<li class="breadcrumb-item"><a href="{% url 'reportes:lista' %}">Reportes</a></li>
+<li class="breadcrumb-item active">Alquileres</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="page-title">Reporte de Alquileres</div>
+        <div class="page-subtitle">{{ total }} alquileres | Total ingresos: ${{ total_ingresos|floatformat:0 }}</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'reportes:alquileres_pdf' %}?estado={{ estado }}&fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}&canal={{ canal }}"
+           class="btn btn-danger">
+            <i class="bi bi-file-pdf me-1"></i>PDF
+        </a>
+        <a href="{% url 'reportes:alquileres_excel' %}?estado={{ estado }}&fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}&canal={{ canal }}"
+           class="btn btn-success">
+            <i class="bi bi-file-excel me-1"></i>Excel
+        </a>
+        <a href="{% url 'reportes:lista' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Volver
+        </a>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Estado</label>
+                <select name="estado" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="activo" {% if estado == 'activo' %}selected{% endif %}>Activo</option>
+                    <option value="vencido" {% if estado == 'vencido' %}selected{% endif %}>Vencido</option>
+                    <option value="devuelto" {% if estado == 'devuelto' %}selected{% endif %}>Devuelto</option>
+                    <option value="cancelado" {% if estado == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Canal</label>
+                <select name="canal" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="web" {% if canal == 'web' %}selected{% endif %}>Web</option>
+                    <option value="whatsapp" {% if canal == 'whatsapp' %}selected{% endif %}>WhatsApp</option>
+                    <option value="presencial" {% if canal == 'presencial' %}selected{% endif %}>Presencial</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Fecha Inicio</label>
+                <input type="date" name="fecha_inicio" class="form-control" value="{{ fecha_inicio }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Fecha Fin</label>
+                <input type="date" name="fecha_fin" class="form-control" value="{{ fecha_fin }}">
+            </div>
+            <div class="col-md-3 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search me-1"></i>Filtrar
+                </button>
+                <a href="{% url 'reportes:alquileres' %}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabla -->
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background:#f8f9fa;">
+                    <tr style="font-size:0.8rem; color:#6c757d;">
+                        <th class="ps-4">N° Alquiler</th>
+                        <th>Cliente</th>
+                        <th>Fecha Inicio</th>
+                        <th>Fecha Fin</th>
+                        <th>Total</th>
+                        <th>Canal</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for alquiler in alquileres %}
+                    <tr style="font-size:0.875rem;">
+                        <td class="ps-4"><strong>{{ alquiler.numero }}</strong></td>
+                        <td>{{ alquiler.cliente.nombre_completo }}</td>
+                        <td>{{ alquiler.fecha_inicio }}</td>
+                        <td>{{ alquiler.fecha_fin }}</td>
+                        <td>${{ alquiler.total|floatformat:0 }}</td>
+                        <td>{{ alquiler.get_canal_display }}</td>
+                        <td>
+                            {% if alquiler.estado == 'activo' %}
+                                <span class="badge bg-success">Activo</span>
+                            {% elif alquiler.estado == 'vencido' %}
+                                <span class="badge bg-danger">Vencido</span>
+                            {% elif alquiler.estado == 'devuelto' %}
+                                <span class="badge bg-secondary">Devuelto</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Cancelado</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-5">
+                            No hay alquileres con los filtros seleccionados
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
