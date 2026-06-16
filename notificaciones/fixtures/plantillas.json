@@ -1,0 +1,80 @@
+[
+  {
+    "model": "notificaciones.plantillanotificacion",
+    "pk": 1,
+    "fields": {
+      "tipo": "confirmacion",
+      "asunto": "Confirmación de Alquiler",
+      "mensaje": "Hola {nombre}, tu alquiler #{numero_alquiler} ha sido confirmado. Fecha de devolución: {fecha_fin}. Total: ${monto}.",
+      "canal": "whatsapp",
+      "activo": true,
+      "fecha_creacion": "2024-01-01T00:00:00Z",
+      "fecha_actualizacion": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "notificaciones.plantillanotificacion",
+    "pk": 2,
+    "fields": {
+      "tipo": "recordatorio_3dias",
+      "asunto": "Recordatorio de Devolución",
+      "mensaje": "Hola {nombre}, tu alquiler #{numero_alquiler} vence en {dias_restantes} días ({fecha_fin}). Total: ${monto}.",
+      "canal": "whatsapp",
+      "activo": true,
+      "fecha_creacion": "2024-01-01T00:00:00Z",
+      "fecha_actualizacion": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "notificaciones.plantillanotificacion",
+    "pk": 3,
+    "fields": {
+      "tipo": "recordatorio_1dia",
+      "asunto": "Recordatorio Urgente de Devolución",
+      "mensaje": "Hola {nombre}, tu alquiler #{numero_alquiler} vence MAÑANA ({fecha_fin}). Total: ${monto}.",
+      "canal": "whatsapp",
+      "activo": true,
+      "fecha_creacion": "2024-01-01T00:00:00Z",
+      "fecha_actualizacion": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "notificaciones.plantillanotificacion",
+    "pk": 4,
+    "fields": {
+      "tipo": "vencimiento",
+      "asunto": "Alquiler Vencido",
+      "mensaje": "Hola {nombre}, tu alquiler #{numero_alquiler} venció el {fecha_fin}. Por favor devuelve el equipo para evitar multas.",
+      "canal": "whatsapp",
+      "activo": true,
+      "fecha_creacion": "2024-01-01T00:00:00Z",
+      "fecha_actualizacion": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "notificaciones.plantillanotificacion",
+    "pk": 5,
+    "fields": {
+      "tipo": "devolucion",
+      "asunto": "Confirmación de Devolución",
+      "mensaje": "Hola {nombre}, hemos recibido la devolución de tu alquiler #{numero_alquiler}. Gracias por tu preferencia.",
+      "canal": "whatsapp",
+      "activo": true,
+      "fecha_creacion": "2024-01-01T00:00:00Z",
+      "fecha_actualizacion": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "notificaciones.plantillanotificacion",
+    "pk": 6,
+    "fields": {
+      "tipo": "multa",
+      "asunto": "Multa Generada",
+      "mensaje": "Hola {nombre}, se ha generado una multa en tu alquiler #{numero_alquiler}. Monto: ${monto}. Contáctanos para más información.",
+      "canal": "whatsapp",
+      "activo": true,
+      "fecha_creacion": "2024-01-01T00:00:00Z",
+      "fecha_actualizacion": "2024-01-01T00:00:00Z"
+    }
+  }
+]

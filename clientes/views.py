@@ -134,6 +134,7 @@ def eliminar(request, pk):
         return redirect('clientes:lista')
     return render(request, 'clientes/eliminar.html', {'cliente': cliente})
 
+
 @login_required
 def mi_perfil(request):
     # Vista exclusiva para el cliente logueado
@@ -157,9 +158,9 @@ def mi_perfil(request):
 def solicitar_alquiler(request):
     from inventario.models import Herramienta
     from alquileres.models import Alquiler, DetalleAlquiler
+    from notificaciones.services import notificar_alquiler_confirmado
     from datetime import datetime
 
-    # El cliente solicita un alquiler desde su panel
     try:
         cliente = Cliente.objects.get(usuario=request.user)
     except Cliente.DoesNotExist:
@@ -220,10 +221,17 @@ def solicitar_alquiler(request):
                 herramienta.cantidad_disponible -= cantidad
                 herramienta.cantidad_alquilada += cantidad
                 herramienta.save()
+                subtotal += sub  # ✅ Fix: acumular subtotal
 
             alquiler.subtotal = subtotal
             alquiler.total = subtotal
             alquiler.save()
+
+            # 🔔 Notificación WhatsApp
+            try:
+                notificar_alquiler_confirmado(alquiler)
+            except Exception as e:
+                print("ERROR NOTIFICACION:", e)
 
             messages.success(request, f'Alquiler {alquiler.numero} creado exitosamente.')
             return redirect('clientes:mi_perfil')
@@ -237,6 +245,7 @@ def solicitar_alquiler(request):
         'cliente': cliente,
     }
     return render(request, 'clientes/solicitar_alquiler.html', context)
+
 
 @login_required
 def mis_alquileres(request):
@@ -341,7 +350,6 @@ def cambiar_password(request):
         password_nuevo = request.POST.get('password_nuevo')
         password_confirmar = request.POST.get('password_confirmar')
 
-        # Verifica contraseña actual
         from django.contrib.auth import authenticate
         user = authenticate(request, username=request.user.username, password=password_actual)
 
@@ -358,6 +366,7 @@ def cambiar_password(request):
             return redirect('login')
 
     return render(request, 'clientes/cambiar_password.html')
+
 
 @login_required
 def solicitar_devolucion(request, pk):
@@ -376,17 +385,14 @@ def solicitar_devolucion(request, pk):
 
     if request.method == 'POST':
         try:
-            # Fecha de hoy como fecha de devolución
             hoy = timezone.now().date()
 
-            # Calcula si hay retraso
             dias_retraso = 0
             tiene_multa = False
             if hoy > alquiler.fecha_fin:
                 dias_retraso = (hoy - alquiler.fecha_fin).days
                 tiene_multa = True
 
-            # Crea la devolución
             devolucion = Devolucion.objects.create(
                 alquiler=alquiler,
                 recibido_por=request.user,
@@ -396,7 +402,6 @@ def solicitar_devolucion(request, pk):
                 observaciones=request.POST.get('observaciones'),
             )
 
-            # Procesa cada herramienta
             for detalle in alquiler.detalles.all():
                 DetalleDevolucion.objects.create(
                     devolucion=devolucion,
@@ -405,7 +410,6 @@ def solicitar_devolucion(request, pk):
                     condicion='bueno',
                 )
 
-                # Actualiza inventario
                 Herramienta.objects.filter(pk=detalle.herramienta.pk).update(
                     cantidad_disponible=models.F('cantidad_disponible') + detalle.cantidad,
                     cantidad_alquilada=models.Case(
@@ -418,12 +422,10 @@ def solicitar_devolucion(request, pk):
                     )
                 )
 
-            # Actualiza estado del alquiler
             alquiler.estado = 'devuelto'
             alquiler.fecha_devolucion_real = hoy
             alquiler.save()
 
-            # Genera multa si hay retraso
             if tiene_multa:
                 from multas.models import Multa, ConfiguracionMulta
                 from django.db.models import Sum
@@ -442,7 +444,6 @@ def solicitar_devolucion(request, pk):
                         monto_total=valor_dia * dias_con_gracia,
                         registrado_por=request.user,
                     )
-                    # Actualiza deuda del cliente
                     multas_pendientes = Multa.objects.filter(
                         cliente=cliente, estado='pendiente'
                     ).aggregate(total=Sum('monto_total'))['total'] or 0
@@ -474,7 +475,6 @@ def pagar_multa_cliente(request, pk):
     except Cliente.DoesNotExist:
         return redirect('login')
 
-    # Solo puede pagar sus propias multas pendientes
     multa = get_object_or_404(Multa, pk=pk, cliente=cliente, estado='pendiente')
 
     if request.method == 'POST':
@@ -487,7 +487,6 @@ def pagar_multa_cliente(request, pk):
                 messages.error(request, 'Debes subir el comprobante de pago.')
                 return redirect('clientes:pagar_multa_cliente', pk=pk)
 
-            # Registra el pago con comprobante
             PagoMulta.objects.create(
                 multa=multa,
                 monto=multa.monto_total,
@@ -497,11 +496,9 @@ def pagar_multa_cliente(request, pk):
                 comprobante=comprobante,
             )
 
-            # Marca como pagada
             multa.estado = 'pagada'
             multa.save()
 
-            # Actualiza deuda del cliente
             from django.db.models import Sum
             multas_pendientes = Multa.objects.filter(
                 cliente=cliente, estado='pendiente'

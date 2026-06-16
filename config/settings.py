@@ -135,3 +135,18 @@ CELERY_RESULT_BACKEND = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
 # Redirige al login cuando no hay sesión activa
 LOGIN_URL = '/'
 LOGIN_REDIRECT_URL = '/dashboard/'
+
+# Twilio - WhatsApp
+TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID', '')
+TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN', '')
+TWILIO_WHATSAPP_FROM = os.getenv('TWILIO_WHATSAPP_FROM', 'whatsapp:+14155238886')
+ADMIN_WHATSAPP = os.getenv('ADMIN_WHATSAPP', '')
+
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    'enviar-recordatorios-diarios': {
+        'task': 'notificaciones.tasks.enviar_recordatorios',
+        'schedule': crontab(hour=9, minute=0),  # Todos los días a las 9:00 AM
+    },
+}

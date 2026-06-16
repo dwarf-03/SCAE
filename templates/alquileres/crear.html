@@ -109,18 +109,34 @@
                     <input type="text" id="buscar-herramienta" class="form-control mb-3"
                         placeholder="Buscar herramienta...">
 
-                    <!-- Lista de herramientas disponibles -->
-                    <div class="row g-2 mb-3" id="lista-herramientas">
-                        {% for h in herramientas %}
-                        <div class="col-md-6 herramienta-item">
-                        <div class="herramienta-card" 
-    data-id="{{ h.pk }}"
-    data-nombre="{{ h.nombre }}"
-    data-precio="{{ h.precio_diario }}"
-    data-disponible="{{ h.cantidad_disponible }}"
-    onclick="seleccionar(this)">
-                        {% endfor %}
-                    </div>
+        <!-- Lista de herramientas disponibles -->
+<div class="row g-2 mb-3" id="lista-herramientas">
+    {% for h in herramientas %}
+    <div class="col-md-6 herramienta-item">
+        <div class="herramienta-card"
+            data-id="{{ h.pk }}"
+            data-nombre="{{ h.nombre }}"
+            data-precio="{{ h.precio_diario }}"
+            data-disponible="{{ h.cantidad_disponible }}"
+            onclick="seleccionar(this)">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="fw-semibold" style="font-size:0.875rem;">{{ h.nombre }}</div>
+                    <div class="text-muted" style="font-size:0.75rem;">{{ h.categoria.nombre }}</div>
+                </div>
+                <span class="badge bg-success">{{ h.cantidad_disponible }} disp.</span>
+            </div>
+            <div class="mt-2 text-primary fw-bold" style="font-size:0.875rem;">
+                ${{ h.precio_diario|floatformat:0 }}/día
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <p class="text-muted text-center">No hay herramientas disponibles.</p>
+    </div>
+    {% endfor %}
+</div>
 
                     <!-- Tabla de herramientas seleccionadas -->
                     <div id="seleccionadas-container" style="display:none;">
@@ -260,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td>$${Math.round(sub).toLocaleString()}</td>
                     <td>
                         <button type="button" class="btn btn-sm btn-outline-danger"
-                                onclick="seleccionar(${id})">
+                                onclick="document.querySelector('[data-id=\\'${id}\\']').click()">
                             <i class="bi bi-x"></i>
                         </button>
                     </td>

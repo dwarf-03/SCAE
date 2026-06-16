@@ -6,6 +6,9 @@ from .models import Alquiler, DetalleAlquiler, Reserva
 from clientes.models import Cliente
 from inventario.models import Herramienta
 from datetime import datetime
+from notificaciones.services import notificar_alquiler_confirmado
+
+
 @login_required
 def lista(request):
     # Obtiene todos los alquileres ordenados por fecha
@@ -38,30 +41,27 @@ def crear(request):
         activo=True, cantidad_disponible__gt=0)
 
     if request.method == 'POST':
+        print("POST DATA:", request.POST)
         try:
             cliente_id = request.POST.get('cliente')
             fecha_inicio = request.POST.get('fecha_inicio')
             fecha_fin = request.POST.get('fecha_fin')
             observaciones = request.POST.get('observaciones')
 
-            # Convierte fechas de string a date
             fecha_inicio_date = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
             fecha_fin_date = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
 
-                # Valida que las fechas sean válidas
             hoy = timezone.now().date()
             if fecha_inicio_date < hoy:
-                    messages.error(request, 'La fecha de inicio no puede ser anterior a hoy.')
-                    return redirect('alquileres:crear')
+                messages.error(request, 'La fecha de inicio no puede ser anterior a hoy.')
+                return redirect('alquileres:crear')
 
             if fecha_fin_date <= fecha_inicio_date:
-                    messages.error(request, 'La fecha de devolución debe ser posterior a la fecha de inicio.')
-                    return redirect('alquileres:crear')
+                messages.error(request, 'La fecha de devolución debe ser posterior a la fecha de inicio.')
+                return redirect('alquileres:crear')
 
-            # Calcula días aquí directamente
             dias = (fecha_fin_date - fecha_inicio_date).days
 
-            # Crea el alquiler
             alquiler = Alquiler.objects.create(
                 cliente_id=cliente_id,
                 registrado_por=request.user,
@@ -72,7 +72,6 @@ def crear(request):
                 observaciones=observaciones,
             )
 
-            # Procesa las herramientas seleccionadas
             herramienta_ids = request.POST.getlist('herramienta_id')
             cantidades = request.POST.getlist('cantidad')
 
@@ -91,19 +90,24 @@ def crear(request):
                     subtotal=sub,
                 )
 
-                # Descuenta del inventario
                 herramienta.cantidad_disponible -= cantidad
                 herramienta.cantidad_alquilada += cantidad
                 herramienta.actualizar_estado()
                 subtotal += sub
 
-            # Actualiza totales del alquiler
             alquiler.subtotal = subtotal
             alquiler.total = subtotal
             alquiler.save()
 
+            # 🔔 Notificar al cliente por WhatsApp
+            try:
+                notificar_alquiler_confirmado(alquiler)
+            except Exception as e:
+                print("ERROR NOTIFICACION:", e)  # temporal para debug
+
             messages.success(request, f'Alquiler {alquiler.numero} creado exitosamente.')
             return redirect('alquileres:detalle', pk=alquiler.pk)
+
         except Exception as e:
             messages.error(request, f'Error al crear alquiler: {str(e)}')
 
@@ -144,3 +148,6 @@ def cancelar(request, pk):
         messages.success(request, f'Alquiler {alquiler.numero} cancelado.')
         return redirect('alquileres:lista')
     return render(request, 'alquileres/cancelar.html', {'alquiler': alquiler})
+
+
+    
