@@ -1,6 +1,124 @@
 {% extends 'base/base.html' %}
+
 {% block title %}Auditoría{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+<li class="breadcrumb-item active">Auditoría</li>
+{% endblock %}
+
 {% block content %}
-<div class="page-title">Auditoría</div>
-<div class="page-subtitle">Registro de auditoría</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="page-title">Auditoría</div>
+        <div class="page-subtitle">{{ total }} registros encontrados</div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Acción</label>
+                <select name="accion" class="form-select">
+                    <option value="">Todas</option>
+                    <option value="crear" {% if accion == 'crear' %}selected{% endif %}>Crear</option>
+                    <option value="editar" {% if accion == 'editar' %}selected{% endif %}>Editar</option>
+                    <option value="eliminar" {% if accion == 'eliminar' %}selected{% endif %}>Eliminar</option>
+                    <option value="login" {% if accion == 'login' %}selected{% endif %}>Login</option>
+                    <option value="logout" {% if accion == 'logout' %}selected{% endif %}>Logout</option>
+                    <option value="ver" {% if accion == 'ver' %}selected{% endif %}>Ver</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Módulo</label>
+                <input type="text" name="modulo" class="form-control"
+                       placeholder="Ej: inventario" value="{{ modulo }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Usuario</label>
+                <input type="text" name="usuario" class="form-control"
+                       placeholder="Nombre de usuario" value="{{ usuario }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Fecha Desde</label>
+                <input type="date" name="fecha_inicio" class="form-control"
+                       value="{{ fecha_inicio }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Fecha Hasta</label>
+                <input type="date" name="fecha_fin" class="form-control"
+                       value="{{ fecha_fin }}">
+            </div>
+            <div class="col-md-2 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i>
+                </button>
+                <a href="{% url 'auditoria:lista' %}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabla -->
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background:#f8f9fa;">
+                    <tr style="font-size:0.8rem; color:#6c757d;">
+                        <th class="ps-4">Usuario</th>
+                        <th>Acción</th>
+                        <th>Módulo</th>
+                        <th>Descripción</th>
+                        <th>IP</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for audit in auditorias %}
+                    <tr style="font-size:0.875rem;">
+                        <td class="ps-4">
+                            <strong>{{ audit.usuario.username|default:"Sistema" }}</strong>
+                        </td>
+                        <td>
+                            {% if audit.accion == 'crear' %}
+                                <span class="badge bg-success">Crear</span>
+                            {% elif audit.accion == 'editar' %}
+                                <span class="badge bg-primary">Editar</span>
+                            {% elif audit.accion == 'eliminar' %}
+                                <span class="badge bg-danger">Eliminar</span>
+                            {% elif audit.accion == 'login' %}
+                                <span class="badge bg-info">Login</span>
+                            {% elif audit.accion == 'logout' %}
+                                <span class="badge bg-secondary">Logout</span>
+                            {% else %}
+                                <span class="badge bg-light text-dark">{{ audit.accion }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ audit.modulo }}</td>
+                        <td style="max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                            {{ audit.descripcion }}
+                        </td>
+                        <td>{{ audit.ip_address|default:"-" }}</td>
+                        <td>{{ audit.fecha_accion|date:"d/m/Y H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-5">
+                            <i class="bi bi-shield-check" style="font-size:2rem;"></i>
+                            <p class="mt-2">No hay registros de auditoría</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
